@@ -10,11 +10,11 @@ run:
 
 # データベースに入るやつ
 # 例: psql -h flask_db -U ${DB_USER} -d ${DB_NAME}
-db:
+db-in:
 	docker-compose exec database bash
 
 # アプリコンテナに入るやつ
-app:
+app-in:
 	docker-compose exec app bash
 
 # アプリコンテナをビルドし直すやつ
