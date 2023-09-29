@@ -3,5 +3,3 @@ uwsgi
 psycopg2
 sqlalchemy
 flask-sqlalchemy
-logging
-datetime
