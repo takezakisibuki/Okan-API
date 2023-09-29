@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  database:
+    container_name: flask_db
+    build: ./database
+    expose:
+      - "5432"
+    volumes:
+      - ./database/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./database/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES-DATABASE=${DB_NAME}
+      - DATABASE_HOST=localhost
+
+  app:
+    container_name: flask_app
+    build: ./app
+    expose:
+      - "3031"
+    volumes:
+      - ./app:/var/www/app
+    depends_on:
+      - database
+    command: uwsgi --ini /var/www/app/config/uwsgi.ini
+
+  nginx:
+    container_name: flask_nginx
+    build: ./nginx
+    restart: always
+    volumes:
+      - ./nginx/config/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+    ports:
+      - "8080:80"
