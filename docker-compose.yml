@@ -25,6 +25,8 @@ services:
     depends_on:
       - database
     command: uwsgi --ini /var/www/app/config/uwsgi.ini
+    environment:
+      - FLASK_DEBUG=1
 
   nginx:
     container_name: flask_nginx

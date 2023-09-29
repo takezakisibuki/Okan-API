@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="mystyle/style.css">
+{% endblock %}
+{% block body %}
+    <h1>ToDoList</h1>    
+    {{table}}
+    {{table | safe}}
+{% endblock %}
