@@ -23,13 +23,13 @@ refresh-app:
 
 # app.logに起動ログを出力するやつ
 # 例: app.logger.info(hoge) とかを関数内に書くとapp.logに出力されるよ
-watch-flask-log:
+log-flask:
 	docker-compose exec app cat app.log
 
 # uwsgi.logを拝見するやつ
-watch-uwsgi-log:
+log-uwsgi:
 	docker-compose exec app cat /var/log/uwsgi.log
 
 # nginx.logを拝見するやつ
-watch-nginx-log:
+log-nginx:
 	docker logs -f flask_nginx
