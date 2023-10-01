@@ -6,7 +6,7 @@ up:
 run:
 	docker-compose rm -fsv app
 	docker compose up -d
-	docker compose exec app pip install flask_sqlalchemy
+#	docker compose exec app pip install flask_sqlalchemy
 
 # データベースに入るやつ
 # 例: psql -h flask_db -U ${DB_USER} -d ${DB_NAME}
