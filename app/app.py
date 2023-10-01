@@ -5,11 +5,13 @@ from psycopg2.extras import DictCursor
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from datetime import datetime,date
+import okan_gpt
 
 # from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 logging.basicConfig(filename='app.log', level=logging.DEBUG)
+logging.basicConfig(filename='app.log', level=logging.ERROR)
 
 def pg_conn():
     setting = {
@@ -30,8 +32,8 @@ class Post(db.Model):
     __tablename__ = 'persons'
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(30), nullable=False)
-    detail = db.Column(db.String(100))
+    title = db.Column(db.Text)
+    detail = db.Column(db.Text)
     due = db.Column(db.DateTime, nullable=False)
 
 class Post2(db.Model):
@@ -47,21 +49,22 @@ class Post2(db.Model):
 #     return render_template('index.html')
 
 @app.route('/', methods=['GET', 'POST'])
-def index():
-    hoge = 'fuga'
-    app.logger.info(hoge)
+def index():    
     if request.method == 'GET':
         posts = Post.query.order_by(Post.due).all()
         return render_template('index.html', posts=posts,today=date.today())
 
     else:
+        # 日記内容と日付を取得
         title = request.form.get('title')
-        detail = request.form.get('detail')
         due = request.form.get('due')
-        
         due = datetime.strptime(due, '%Y-%m-%d')
-        new_post = Post(title=title, detail=detail, due=due)
 
+        # 日記内容をOpenAIに投げて、おかんコメントを取得
+        res = okan_gpt.create( title )
+
+        # 日記内容・おかんコメント・日付をDBに保存
+        new_post = Post(title=title, detail=res["choices"][0]["message"]["content"], due=due)
         db.session.add(new_post)
         db.session.commit()
         return redirect('/') # 変更
