@@ -9,7 +9,7 @@ from datetime import datetime,date
 # from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
-logging.basicConfig(filename='app.log', level=logging.ERROR)
+logging.basicConfig(filename='app.log', level=logging.DEBUG)
 
 def pg_conn():
     setting = {
