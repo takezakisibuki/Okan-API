@@ -7,12 +7,13 @@ from sqlalchemy import create_engine
 from datetime import datetime,date
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.schema import ForeignKey
-
+import okan_gpt
 
 # from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 logging.basicConfig(filename='app.log', level=logging.DEBUG)
+logging.basicConfig(filename='app.log', level=logging.ERROR)
 
 def pg_conn():
     setting = {
@@ -52,13 +53,26 @@ class diary(db.Model):
 #     detail = db.Column(db.String(100))
 #     due = db.Column(db.DateTime, nullable=False)
 
-@app.get('/')
-def index():
-    return render_template('index.html')
+@app.route('/', methods=['GET', 'POST'])
+def index():    
+    if request.method == 'GET':
+        posts = Post.query.order_by(Post.due).all()
+        return render_template('index.html', posts=posts,today=date.today())
 
-# @app.route('/get',methods=['GET'])
-# def get_text():
-#     posts=diary.query
+    else:
+        # 日記内容と日付を取得
+        title = request.form.get('title')
+        due = request.form.get('due')
+        due = datetime.strptime(due, '%Y-%m-%d')
+
+        # 日記内容をOpenAIに投げて、おかんコメントを取得
+        res = okan_gpt.create( title )
+
+        # 日記内容・おかんコメント・日付をDBに保存
+        new_post = Post(title=title, detail=res["choices"][0]["message"]["content"], due=due)
+        db.session.add(new_post)
+        db.session.commit()
+        return redirect('/') # 変更
 
 @app.route('/create',methods=['POST'])
 def create():
