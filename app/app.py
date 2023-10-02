@@ -45,6 +45,22 @@ class diary(db.Model):
     time = db.Column(db.DateTime, nullable=False)
     user_id=db.Column(db.Integer,db.ForeignKey("users.id", name="fk_test_results_00",onupdate='CASCADE', ondelete='CASCADE'),nullable=False)
 
+class Post(db.Model):
+    __tablename__ = 'persons'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.Text)
+    detail = db.Column(db.Text)
+    due = db.Column(db.DateTime, nullable=False)
+
+class Post2(db.Model):
+    __tablename__ = 'persons2'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(30), nullable=False)
+    detail = db.Column(db.String(100))
+    due = db.Column(db.DateTime, nullable=False)
+
 # class diary(db.Model):
 #     __tablename__ = 'diary'
 
