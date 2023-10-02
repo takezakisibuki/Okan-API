@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, render_template, request
+from flask import Flask, redirect, url_for, render_template, request, jsonify
 import psycopg2
 import logging
 from psycopg2.extras import DictCursor
@@ -8,6 +8,8 @@ from datetime import datetime,date
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.schema import ForeignKey
 import okan_gpt
+from flask_swagger_ui import get_swaggerui_blueprint
+import random
 
 # from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -99,6 +101,121 @@ def create():
     db.session.add(new_post)
     db.session.commit()
     return 'DBに保存しました'
+
+'''-----------------以下は本機能のAPI-----------------'''
+@app.route("/swagger")
+def spec():
+    swag = swagger(app)
+    swag["info"]["version"] = "1.0"
+    swag["info"]["title"] = "My API"
+    return jsonify(swag)
+
+
+'''-----------------以下はテスト用のAPI-----------------'''
+# ① 日記を投稿するAPI パラメータ：user-id,diary-content
+@app.route('/api/test/okan-api',methods=['POST'])
+def okan_api():
+    params = request.args
+    if 'user-id' in params and 'diary-content' in params:
+        test = {
+            "comment": "おかんからのテストコメントやでぇ",
+        }
+    else:
+        test = {
+            "error": "user-idかdiary-contentが指定されていません",
+        }
+    return jsonify(test)
+
+# ② 日記を取得するAPI パラメータ：diary-id
+@app.route('/api/test/diary',methods=['GET'])
+def diary_api():
+    # URLパラメータ
+    params = request.args
+    if 'diary-id' in params:
+        if 'diary-id' == 1:
+            test = {
+                'id':params.get('diary-id'),
+                'content': "あんたの日記内容やでぇ",
+                'comment': "おかんからのテストコメントやでぇ",
+                'time': '2023-10-1',
+            }
+        elif 'diary-id' == 2:
+            test = {
+                'id':params.get('diary-id'),
+                'content': "あんたの日記内容やでぇ.2",
+                'comment': "おかんからのテストコメントやでぇ.2",
+                'time': '2023-10-2',
+            }
+        else:
+            test = {
+                'id':params.get('diary-id'),
+                'content': "None",
+                'comment': "この日記は存在せーへんでぇ",
+                'time': '1970-1-1',
+            }
+    else: 
+        test = {
+            "error": "idが指定されていません",
+        }
+    return jsonify(test)
+
+# ③ 指定月の日記一覧を取得するAPI パラメータ：user-id,month
+@app.route('/api/test/monthly',methods=['GET'])
+def monthly_api():
+    # URLパラメータ
+    params = request.args
+    if 'user-id' in params and 'month' in params:
+        if 'month' == 10:
+            test = {
+                "diary_list": [
+                    { "id": 1, "date": 2023-10-1 },
+                    { "id": 2, "date": 2023-10-2 },
+                ]
+            }
+        else:
+            test = {
+                "diary_list": []
+            }
+    else:
+        test = {
+            "error": "user-idかmonthが指定されていません",
+        }
+    return jsonify(test)
+
+# ④ ギフトガチャを回すAPI パラメータ：user-id
+@app.route('/api/test/gift-rand',methods=['POST'])
+def rand_api():
+    # URLパラメータ
+    params = request.args
+    if 'user-id' in params:
+        test = {
+            "gift_number": random.randrange(25),
+        }
+    else:
+        test = {
+            "error": "user-idが指定されていません",
+        }
+    return jsonify(test)
+
+# ⑤ ギフトフラグを取得するAPI パラメータ：user-id
+@app.route('/api/test/gift-flag',methods=['GET'])
+def gift_flag_api():
+    # URLパラメータ
+    params = request.args
+    if 'user-id' in params:
+        test = {
+            "gift_flag": [0 for _ in range(25)],
+        }
+    else:
+        test = {
+            "error": "user-idが指定されていません",
+        }
+    return jsonify(test)
+
+
+'''-----------------以下はswaggerの記述-----------------'''
+
+
 
 
 # @app.route('/',methods=['GET'])

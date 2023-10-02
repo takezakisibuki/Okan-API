@@ -33,3 +33,11 @@ log-uwsgi:
 # nginx.logを拝見するやつ
 log-nginx:
 	docker logs -f flask_nginx
+
+# テストAPIを実行
+test-api:
+	curl -X POST 'http://localhost:8080/api/test/okan-api?user-id=1&diary-content=hoge'
+	curl -X GET 'http://localhost:8080/api/test/diary?diary-id=1'
+	curl -X GET 'http://localhost:8080/api/test/monthly?user-id=1&month=10'
+	curl -X POST 'http://localhost:8080/api/test/gift-rand?user-id=1'
+	curl -X GET 'http://localhost:8080/api/test/gift-flag?user-id=1'
