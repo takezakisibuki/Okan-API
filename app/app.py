@@ -12,12 +12,14 @@ import swagger
 from flask_swagger_ui import get_swaggerui_blueprint
 import random
 
-# from werkzeug.middleware.proxy_fix import ProxyFix
-
+# 最初の最初のおまじない（Flask）
 app = Flask(__name__)
+
+# ログの出力を許可するためのおまじない（./app.logに出力されます）
 logging.basicConfig(filename='app.log', level=logging.DEBUG)
 logging.basicConfig(filename='app.log', level=logging.ERROR)
 
+# DB接続用のこーんを設定するおまじない
 def pg_conn():
     setting = {
         'host': 'flask_db', # dbコンテナ名を指定
@@ -28,17 +30,19 @@ def pg_conn():
     }
     return psycopg2.connect(**setting)
 
+# PostgreSQLにSQLAlchemyを紐づけるためのおまじない
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@flask_db:5432/postgres'
 engine = create_engine(f'postgresql://postgres:postgres@flask_db:5432/postgres', echo=True)
 db = SQLAlchemy(app)
-# app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_port=1, x_proto=1)
 
+# ユーザテーブル
 class users(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
     flag=db.Column(pg.ARRAY(db.Integer, dimensions=1), nullable=False)
 
+# 日記テーブル
 class diary(db.Model):
     __tablename__ = 'diary'
 
@@ -48,6 +52,7 @@ class diary(db.Model):
     time = db.Column(db.DateTime, nullable=False)
     user_id=db.Column(db.Integer,db.ForeignKey("users.id", name="fk_test_results_00",onupdate='CASCADE', ondelete='CASCADE'),nullable=False)
 
+# テスト用のテーブル（擬似フロントエンドから使用）
 class Post(db.Model):
     __tablename__ = 'persons'
 
@@ -56,51 +61,13 @@ class Post(db.Model):
     detail = db.Column(db.Text)
     due = db.Column(db.DateTime, nullable=False)
 
-class Post2(db.Model):
-    __tablename__ = 'persons2'
-
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(30), nullable=False)
-    detail = db.Column(db.String(100))
-    due = db.Column(db.DateTime, nullable=False)
-
-@app.route('/', methods=['GET', 'POST'])
-def index():    
-    if request.method == 'GET':
-        posts = Post.query.order_by(Post.due).all()
-        return render_template('index.html', posts=posts,today=date.today())
-
-    else:
-        # 日記内容と日付を取得
-        title = request.form.get('title')
-        due = request.form.get('due')
-        due = datetime.strptime(due, '%Y-%m-%d')
-
-        # 日記内容をOpenAIに投げて、おかんコメントを取得
-        res = okan_gpt.create( title )
-
-        # 日記内容・おかんコメント・日付をDBに保存
-        new_post = Post(title=title, detail=res["choices"][0]["message"]["content"], due=due)
-        db.session.add(new_post)
-        db.session.commit()
-        return redirect('/') # 変更
-
-# @app.route('/create',methods=['POST'])
-# def create():
-#     user_post=users(id=1,flag=[0 for _ in range(25)])
-#     db.session.add(user_post)
-#     db.session.commit()
-#     new_post = diary(id=1,content='ありがとう', comment='おおきに',time= datetime.now(),user_id=1)
-#     db.session.add(new_post)
-#     db.session.commit()
-#     return 'DBに保存しました'
 
 '''-----------------以下は本機能のAPI-----------------'''
 
 
 
 '''-----------------以下はテスト用のAPI-----------------'''
-# ① 日記を投稿するAPI パラメータ：user-id,diary-content
+# 【テスト】① 日記を投稿するAPI パラメータ：user-id,diary-content
 @app.route('/api/test/okan-api',methods=['POST'])
 def okan_api():
     params = request.form
@@ -114,7 +81,7 @@ def okan_api():
         }
     return jsonify(test)
 
-# ② 日記を取得するAPI パラメータ：diary-id
+# 【テスト】② 日記を取得するAPI パラメータ：diary-id
 @app.route('/api/test/diary',methods=['GET'])
 def diary_api():
     # URLパラメータ
@@ -141,13 +108,13 @@ def diary_api():
                 'comment': "この日記は存在せーへんでぇ",
                 'time': '1970-1-1',
             }
-    else: 
+    else:
         test = {
             "error": "idが指定されていません",
         }
     return jsonify(test)
 
-# ③ 指定月の日記一覧を取得するAPI パラメータ：user-id,month
+# 【テスト】③ 指定月の日記一覧を取得するAPI パラメータ：user-id,month
 @app.route('/api/test/monthly',methods=['GET'])
 def monthly_api():
     # URLパラメータ
@@ -170,7 +137,7 @@ def monthly_api():
         }
     return jsonify(test)
 
-# ④ ギフトガチャを回すAPI パラメータ：user-id
+# 【テスト】④ ギフトガチャを回すAPI パラメータ：user-id
 @app.route('/api/test/gift-rand',methods=['POST'])
 def rand_api():
     # URLパラメータ
@@ -185,7 +152,7 @@ def rand_api():
         }
     return jsonify(test)
 
-# ⑤ ギフトフラグを取得するAPI パラメータ：user-id
+# 【テスト】⑤ ギフトフラグを取得するAPI パラメータ：user-id
 @app.route('/api/test/gift-flag',methods=['GET'])
 def gift_flag_api():
     # URLパラメータ
@@ -200,8 +167,20 @@ def gift_flag_api():
         }
     return jsonify(test)
 
+# 【テスト】日記テーブルにテストレコードを作成する
+@app.route('/test-table',methods=['POST'])
+def test_table():
+    user_post=users(id=1,flag=[0 for _ in range(25)])
+    db.session.add(user_post)
+    db.session.commit()
+    new_post = diary(id=1,content='ありがとう', comment='おおきに',time= datetime.now(),user_id=1)
+    db.session.add(new_post)
+    db.session.commit()
+    return 'DBに保存しました'
+
 
 '''-----------------以下はswaggerの記述-----------------'''
+# swagger そのもののルーティング
 SWAGGER_URL = '/api/docs'
 API_URL = '/swagger'
 swaggerui_blueprint = get_swaggerui_blueprint(
@@ -213,35 +192,34 @@ swaggerui_blueprint = get_swaggerui_blueprint(
 )
 app.register_blueprint(swaggerui_blueprint)
 
+# swagger の設定ファイル
 @app.route('/swagger')
 def swagger_rule():
     json = swagger.swag()
     return (json)
 
 
-@app.route('/',methods=['GET'])
-def get_text():
-    posts=diary.query
+'''-----------------以下はテストページの記述(後で消す)-----------------'''
+# おかん日記風のフロントエンドのモックです
+@app.route('/', methods=['GET', 'POST'])
+def index():    
+    if request.method == 'GET':
+        posts = Post.query.order_by(Post.due).all()
+        return render_template('index.html', posts=posts,today=date.today())
+    else:
+        # 日記内容と日付を取得
+        title = request.form.get('title')
+        due = request.form.get('due')
+        due = datetime.strptime(due, '%Y-%m-%d')
 
-# @app.route('/', methods=['GET', 'POST'])
-# def index():
-#     # hoge = 'fuga'
-#     # app.logger.info(hoge)
-#     if request.method == 'GET':
-#         posts = Post.query.order_by(Post.due).all()
-#         return render_template('index.html', posts=posts,today=date.today())
+        # 日記内容をOpenAIに投げて、おかんコメントを取得
+        res = okan_gpt.create( title )
 
-#     else:
-#         title = request.form.get('title')
-#         detail = request.form.get('detail')
-#         due = request.form.get('due')
-        
-#         due = datetime.strptime(due, '%Y-%m-%d')#文字列をdatetimeに変換
-#         new_post = Post(title=title, detail=detail, due=due)
-
-#         db.session.add(new_post)
-#         db.session.commit()
-#         return redirect('/') # 変更
+        # 日記内容・おかんコメント・日付をDBに保存
+        new_post = Post(title=title, detail=res["choices"][0]["message"]["content"], due=due)
+        db.session.add(new_post)
+        db.session.commit()
+        return redirect('/') # 変更
 
 @app.route('/create')
 def create():
@@ -250,13 +228,11 @@ def create():
 @app.route('/detail/<int:id>')
 def read(id):
     post = Post.query.get(id)
-
     return render_template('detail.html', post=post)
 
 @app.route('/delete/<int:id>')
 def delete(id):
     post = Post.query.get(id)
-
     db.session.delete(post)
     db.session.commit()
     return redirect('/')
@@ -270,29 +246,15 @@ def update(id):
         post.title = request.form.get('title')
         post.detail = request.form.get('detail')
         post.due = datetime.strptime(request.form.get('due'), '%Y-%m-%d')
-
         db.session.commit()
         return redirect('/')
 
 @app.route('/result',methods=["GET"])
 def result():
-    # posts=Post.query.limit(10).all()
-    # sql_statement = (
-    #                     select([
-    #                         User.id,
-    #                         User.name, 
-    #                         User.age
-    #                     ]).filter(
-    #                         (User.name == user_name) &
-    #                         (User.age >= user_age) 
-    #                     ).limit(10)
-    #                 )
     sql_statement = 'SELECT * FROM persons limit 10'
-    
     df = pd.read_sql_query(sql=sql_statement, con=engine)
-
     return render_template('dbresult.html',table=(df.to_html(classes="mystyle")))
-    # return render_template('dbresult.html',table=posts)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

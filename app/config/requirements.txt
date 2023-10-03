@@ -5,4 +5,3 @@ sqlalchemy
 flask-sqlalchemy
 requests
 flask_swagger_ui
-random
