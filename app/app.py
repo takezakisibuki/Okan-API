@@ -8,6 +8,7 @@ from datetime import datetime,date
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.schema import ForeignKey
 import okan_gpt
+import swagger
 from flask_swagger_ui import get_swaggerui_blueprint
 import random
 
@@ -63,14 +64,6 @@ class Post2(db.Model):
     detail = db.Column(db.String(100))
     due = db.Column(db.DateTime, nullable=False)
 
-# class diary(db.Model):
-#     __tablename__ = 'diary'
-
-#     id = db.Column(db.Integer, primary_key=True)
-#     title = db.Column(db.String(30), nullable=False)
-#     detail = db.Column(db.String(100))
-#     due = db.Column(db.DateTime, nullable=False)
-
 @app.route('/', methods=['GET', 'POST'])
 def index():    
     if request.method == 'GET':
@@ -103,22 +96,17 @@ def create():
     return 'DBに保存しました'
 
 '''-----------------以下は本機能のAPI-----------------'''
-@app.route("/swagger")
-def spec():
-    swag = swagger(app)
-    swag["info"]["version"] = "1.0"
-    swag["info"]["title"] = "My API"
-    return jsonify(swag)
+
 
 
 '''-----------------以下はテスト用のAPI-----------------'''
 # ① 日記を投稿するAPI パラメータ：user-id,diary-content
 @app.route('/api/test/okan-api',methods=['POST'])
 def okan_api():
-    params = request.args
+    params = request.form
     if 'user-id' in params and 'diary-content' in params:
         test = {
-            "comment": "おかんからのテストコメントやでぇ",
+            "comment": '"'+params.get('diary-content')+'"に対するおかんからのテストコメントやでぇ',
         }
     else:
         test = {
@@ -186,7 +174,7 @@ def monthly_api():
 @app.route('/api/test/gift-rand',methods=['POST'])
 def rand_api():
     # URLパラメータ
-    params = request.args
+    params = request.form
     if 'user-id' in params:
         test = {
             "gift_number": random.randrange(25),
@@ -214,8 +202,21 @@ def gift_flag_api():
 
 
 '''-----------------以下はswaggerの記述-----------------'''
+SWAGGER_URL = '/api/docs'
+API_URL = '/swagger'
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': "おかんAPI"
+    },
+)
+app.register_blueprint(swaggerui_blueprint)
 
-
+@app.route('/swagger')
+def swagger_rule():
+    json = swagger.swag()
+    return (json)
 
 
 # @app.route('/',methods=['GET'])
