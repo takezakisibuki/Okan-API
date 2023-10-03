@@ -49,7 +49,7 @@ class diary(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content=db.Column(db.Text,nullable=False)
     comment=db.Column(db.Text,nullable=False)
-    time = db.Column(db.DateTime, nullable=False)
+    time = db.Column(db.Date, nullable=False)
     user_id=db.Column(db.Integer,db.ForeignKey("users.id", name="fk_test_results_00",onupdate='CASCADE', ondelete='CASCADE'),nullable=False)
 
 # テスト用のテーブル（擬似フロントエンドから使用）
