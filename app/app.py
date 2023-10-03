@@ -11,6 +11,7 @@ import okan_gpt
 import swagger
 from flask_swagger_ui import get_swaggerui_blueprint
 import random
+import pytz
 
 # 最初の最初のおまじない（Flask）
 app = Flask(__name__)
@@ -49,7 +50,7 @@ class diary(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content=db.Column(db.Text,nullable=False)
     comment=db.Column(db.Text,nullable=False)
-    time = db.Column(db.Date, nullable=False)
+    time = db.Column(db.Date(), nullable=False)
     user_id=db.Column(db.Integer,db.ForeignKey("users.id", name="fk_test_results_00",onupdate='CASCADE', ondelete='CASCADE'),nullable=False)
 
 # テスト用のテーブル（擬似フロントエンドから使用）
@@ -106,12 +107,45 @@ def month_info():
             "日付": post.time
         })
     return jsonify(hoge)
+# ① [POST] 日記保存とオカンコメントの生成＆格納API
+@app.route('/api/okan-api',methods=['POST'])
+def okan_api():
+    # ユーザIDと日記内容のフォームパラメータをゲット
+    params = request.form
+    # 今日の日付を日本時間で取得
+    today=datetime.now(pytz.timezone('Asia/Tokyo'))
+    date_today = today.date()
+    user_id=params.get('user-id',type=int)
+    # db内にすでに今日日記が書かれてあるかの確認
+    posts=db.session.query(diary).filter(diary.user_id==user_id,diary.time==date_today).all()
+    # 書かれてないなら日記の内容とその他の情報をdiaryに保存
+    if len(posts)==0:
+        # パラメータが正しければ保存
+        if 'user-id' in params and 'diary-content' in params:
+            content=params.get('diary-content')
+            comment=okan_gpt.create(content)
+            new_record=diary(content=content,comment=comment["choices"][0]["message"]["content"],time=date_today,user_id=user_id)
+            db.session.add(new_record)
+            db.session.commit()
 
+            test = {
+                "comment": comment["choices"][0]["message"]["content"],
+            }
+        # 正しくなければエラーを返す
+        else:
+            test = {
+                "error": "user-idかdiary-contentが指定されていません",
+            }
+        return jsonify(test)
+    # 書かれているならエラーを返す
+    else :
+        test={"error":"今日の日記はもう書いたよ"}
+        return jsonify(test)
 
 '''-----------------以下はテスト用のAPI-----------------'''
 # 【テスト】① 日記を投稿するAPI パラメータ：user-id,diary-content
 @app.route('/api/test/okan-api',methods=['POST'])
-def okan_api():
+def test_okan_api():
     params = request.form
     if 'user-id' in params and 'diary-content' in params:
         test = {
@@ -215,7 +249,7 @@ def test_table():
     user_post=users(id=1,flag=[0 for _ in range(25)])
     db.session.add(user_post)
     db.session.commit()
-    new_post = diary(id=1,content='ありがとう', comment='おおきに',time= datetime.now(),user_id=1)
+    new_post = diary(id=1,content='ありがとう', comment='おおきに',time= datetime.now(pytz.timezone('Asia/Tokyo')),user_id=1)
     db.session.add(new_post)
     db.session.commit()
     return 'DBに保存しました'
