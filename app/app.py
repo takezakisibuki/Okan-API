@@ -64,6 +64,22 @@ class Post(db.Model):
 
 '''-----------------以下は本機能のAPI-----------------'''
 
+# ② 日記を取得するAPI パラメータ：diary-id
+@app.route('/api/diary',methods=['GET'])
+def get_diary():
+    diary_id=request.args.get('diary-id')
+    posts=diary.query.filter(diary.id==diary_id).all()
+    # app.logger.info(type(posts))
+    for post in posts:
+        diary_json={
+            "id": post.id,
+            "内容": post.content,
+            "コメント": post.comment,
+            "日付": post.time,
+        }
+    app.logger.info(diary_json)
+    return jsonify(diary_json)
+
 
 
 '''-----------------以下はテスト用のAPI-----------------'''
