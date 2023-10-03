@@ -85,15 +85,15 @@ def index():
         db.session.commit()
         return redirect('/') # 変更
 
-@app.route('/create',methods=['POST'])
-def create():
-    user_post=users(id=1,flag=[0 for _ in range(25)])
-    db.session.add(user_post)
-    db.session.commit()
-    new_post = diary(id=1,content='ありがとう', comment='おおきに',time= datetime.now(),user_id=1)
-    db.session.add(new_post)
-    db.session.commit()
-    return 'DBに保存しました'
+# @app.route('/create',methods=['POST'])
+# def create():
+#     user_post=users(id=1,flag=[0 for _ in range(25)])
+#     db.session.add(user_post)
+#     db.session.commit()
+#     new_post = diary(id=1,content='ありがとう', comment='おおきに',time= datetime.now(),user_id=1)
+#     db.session.add(new_post)
+#     db.session.commit()
+#     return 'DBに保存しました'
 
 '''-----------------以下は本機能のAPI-----------------'''
 
@@ -120,14 +120,14 @@ def diary_api():
     # URLパラメータ
     params = request.args
     if 'diary-id' in params:
-        if 'diary-id' == 1:
+        if params.get('diary-id',type=int) == 1:
             test = {
                 'id':params.get('diary-id'),
                 'content': "あんたの日記内容やでぇ",
                 'comment': "おかんからのテストコメントやでぇ",
                 'time': '2023-10-1',
             }
-        elif 'diary-id' == 2:
+        elif params.get('diary-id',type=int) == 2:
             test = {
                 'id':params.get('diary-id'),
                 'content': "あんたの日記内容やでぇ.2",
@@ -219,9 +219,9 @@ def swagger_rule():
     return (json)
 
 
-# @app.route('/',methods=['GET'])
-# def get_text():
-#     posts=diary.query
+@app.route('/',methods=['GET'])
+def get_text():
+    posts=diary.query
 
 # @app.route('/', methods=['GET', 'POST'])
 # def index():
@@ -243,56 +243,56 @@ def swagger_rule():
 #         db.session.commit()
 #         return redirect('/') # 変更
 
-# @app.route('/create')
-# def create():
-#     return render_template('create.html')
+@app.route('/create')
+def create():
+    return render_template('create.html')
 
-# @app.route('/detail/<int:id>')
-# def read(id):
-#     post = Post.query.get(id)
+@app.route('/detail/<int:id>')
+def read(id):
+    post = Post.query.get(id)
 
-#     return render_template('detail.html', post=post)
+    return render_template('detail.html', post=post)
 
-# @app.route('/delete/<int:id>')
-# def delete(id):
-#     post = Post.query.get(id)
+@app.route('/delete/<int:id>')
+def delete(id):
+    post = Post.query.get(id)
 
-#     db.session.delete(post)
-#     db.session.commit()
-#     return redirect('/')
+    db.session.delete(post)
+    db.session.commit()
+    return redirect('/')
 
-# @app.route('/update/<int:id>', methods=['GET', 'POST'])
-# def update(id):
-#     post = Post.query.get(id)
-#     if request.method == 'GET':
-#         return render_template('update.html', post=post)
-#     else:
-#         post.title = request.form.get('title')
-#         post.detail = request.form.get('detail')
-#         post.due = datetime.strptime(request.form.get('due'), '%Y-%m-%d')
+@app.route('/update/<int:id>', methods=['GET', 'POST'])
+def update(id):
+    post = Post.query.get(id)
+    if request.method == 'GET':
+        return render_template('update.html', post=post)
+    else:
+        post.title = request.form.get('title')
+        post.detail = request.form.get('detail')
+        post.due = datetime.strptime(request.form.get('due'), '%Y-%m-%d')
 
-#         db.session.commit()
-#         return redirect('/')
+        db.session.commit()
+        return redirect('/')
 
-# @app.route('/result',methods=["GET"])
-# def result():
-#     # posts=Post.query.limit(10).all()
-#     # sql_statement = (
-#     #                     select([
-#     #                         User.id,
-#     #                         User.name, 
-#     #                         User.age
-#     #                     ]).filter(
-#     #                         (User.name == user_name) &
-#     #                         (User.age >= user_age) 
-#     #                     ).limit(10)
-#     #                 )
-#     sql_statement = 'SELECT * FROM persons limit 10'
+@app.route('/result',methods=["GET"])
+def result():
+    # posts=Post.query.limit(10).all()
+    # sql_statement = (
+    #                     select([
+    #                         User.id,
+    #                         User.name, 
+    #                         User.age
+    #                     ]).filter(
+    #                         (User.name == user_name) &
+    #                         (User.age >= user_age) 
+    #                     ).limit(10)
+    #                 )
+    sql_statement = 'SELECT * FROM persons limit 10'
     
-#     df = pd.read_sql_query(sql=sql_statement, con=engine)
+    df = pd.read_sql_query(sql=sql_statement, con=engine)
 
-#     return render_template('dbresult.html',table=(df.to_html(classes="mystyle")))
-#     # return render_template('dbresult.html',table=posts)
+    return render_template('dbresult.html',table=(df.to_html(classes="mystyle")))
+    # return render_template('dbresult.html',table=posts)
 
 if __name__ == "__main__":
     app.run(debug=True)
