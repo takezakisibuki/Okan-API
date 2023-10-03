@@ -75,7 +75,7 @@ def get_diary():
             "id": post.id,
             "内容": post.content,
             "コメント": post.comment,
-            "日付": post.time,
+            "日付": post.time.strftime('%Y-%m-%d'),
         }
     app.logger.info(diary_json)
     return jsonify(diary_json)
