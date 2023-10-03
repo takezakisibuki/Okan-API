@@ -3,7 +3,7 @@ import psycopg2
 import logging
 from psycopg2.extras import DictCursor
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from datetime import datetime,date
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.schema import ForeignKey
@@ -80,6 +80,32 @@ def get_diary():
     app.logger.info(diary_json)
     return jsonify(diary_json)
 
+# ③ 日記を取得するAPI パラメータ：diary-id
+@app.route('/api/monthly',methods=['GET'])
+def month_info():
+    user_id=request.args.get('user-id')
+    month=request.args.get('month', type=int)
+    # monthの入ったテーブルを作成
+    # select *,to_char(time,'MM') AS month
+    # from diary;
+    # usersテーブルと結合し、month=10のものをピックアップ
+    with engine.connect() as conn:
+        posts=conn.execute(text("SELECT * \
+                            FROM (\
+                            SELECT *,to_char(time,'MM')AS month\
+                            FROM diary\
+                            )AS diary2\
+                            JOIN users\
+                            ON diary2.user_id=users.id\
+                            WHERE(users.id=user_id and diary2.month=month)\
+                            "))
+    hoge=[]
+    for post in posts:
+        hoge.append({
+            "日記ID": post.id,
+            "日付": post.time
+        })
+    return jsonify(hoge)
 
 
 '''-----------------以下はテスト用のAPI-----------------'''
