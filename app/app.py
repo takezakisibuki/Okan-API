@@ -9,9 +9,11 @@ from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.schema import ForeignKey
 import okan_gpt
 import swagger
+from sqlalchemy.orm import sessionmaker
 from flask_swagger_ui import get_swaggerui_blueprint
 import random
 import pytz
+import copy
 
 # 最初の最初のおまじない（Flask）
 app = Flask(__name__)
@@ -142,6 +144,50 @@ def month_info():
             "日付": post.time
         })
     return jsonify(hoge)
+
+# ④ ギフトガチャを回すAPI パラメータ：user-id
+@app.route('/api/gift-rand', methods=['POST'])
+def rand_api_j():
+    # URLパラメータ
+    params = request.form
+    if 'user-id' in params:
+        user_id = int(params['user-id'])
+        ran = random.randint(0, 24)
+
+        # ユーザーの存在を確認
+        user = users.query.filter(users.id == user_id).first()
+        if user:
+            flag_list = copy.copy(user.flag)
+            app.logger.info(type(user.flag))
+            app.logger.info(type(flag_list))
+            if flag_list is not None and 0 <= ran < len(flag_list):
+                flag_list[ran] = 1 
+                user.flag = flag_list
+                app.logger.info(user.flag)
+                app.logger.info(flag_list)
+                db.session.commit()
+                data = {
+                    "id":user.id,
+                    "flag":user.flag,
+                    "flag2":flag_list,
+                    "gift_number": ran
+                    }
+                test = {
+                    "gift_number": ran,
+                }
+            else:
+                test = {
+                    "error": "指定されたユーザーが存在しないか、flag_listが正しく設定されていません",
+                }
+        else:
+            test = {
+                "error": "指定されたユーザーが存在しません",
+            }
+    else:
+        test = {
+            "error": "user-idが指定されていません",
+        }
+    return jsonify(data)
 
 
 '''-----------------以下はテスト用のAPI-----------------'''
