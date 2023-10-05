@@ -6,3 +6,4 @@ flask-sqlalchemy
 requests
 flask_swagger_ui
 pytz
+pyjwt

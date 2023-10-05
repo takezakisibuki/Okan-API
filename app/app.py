@@ -1,10 +1,10 @@
-from flask import Flask, redirect, url_for, render_template, request, jsonify
+from flask import Flask, redirect, url_for, render_template, request, jsonify,abort
 import psycopg2
 import logging
 from psycopg2.extras import DictCursor
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, text
-from datetime import datetime,date
+from datetime import datetime,date,timedelta
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.schema import ForeignKey
 import okan_gpt
@@ -14,6 +14,8 @@ from flask_swagger_ui import get_swaggerui_blueprint
 import random
 import pytz
 import copy
+import jwt
+import functools
 
 # 最初の最初のおまじない（Flask）
 app = Flask(__name__)
@@ -44,6 +46,7 @@ class users(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     flag=db.Column(pg.ARRAY(db.Integer, dimensions=1), nullable=False)
+    pas=db.Column(db.String(255),nullable=False)
 
 # 日記テーブル
 class diary(db.Model):
@@ -63,6 +66,46 @@ class Post(db.Model):
     title = db.Column(db.Text)
     detail = db.Column(db.Text)
     due = db.Column(db.DateTime, nullable=False)
+
+@app.route('/authorize',methods=['POST'])
+def authorize():
+    # passwordとidをクエリパラメータとして取得
+    # クエリパラメータでもrequest.form.getで取得。argsだと取って来れない。
+    input_id = request.form.get('id',type=int)
+    input_password = request.form.get('password')
+    user_pass = db.session.query(users.pas).filter(users.id==input_id).first()
+    #idがテーブルに登録されていなければエラーを返す
+    if user_pass is None:
+        return jsonify({"error":f"Your id is not registered: input id is {input_id}"})
+    # パスワードが間違っていればエラーを返す
+    if not user_pass[0]==input_password:
+        return jsonify({"error":f"Your password is wrong: input password is {input_password}"})
+    # トークンを時間とidから生成
+    exp = datetime.utcnow() + timedelta(hours=1)
+    encoded = jwt.encode({'id': input_id,'exp': exp}, 'SECRET_KEY', algorithm='HS256')
+    response = {'user_id':input_id,'token':encoded}
+    return jsonify(response)
+
+def login_required(method):
+    @functools.wraps(method)
+    def wrapper(*args, **kwargs):
+        header = request.headers.get('Authorization')
+        app.logger.info(f"header is {header}")
+        # token = header.split()
+        token=header
+        try:
+            app.logger.info(f"token is {token}")
+            decoded = jwt.decode(token,'SECRET_KEY',algorithms='HS256')
+            app.logger.info(f"decode is {decoded}")
+            user_id=decoded['id']
+        except jwt.DecodeError:
+            # jsonify({"error:'Token is not valid.'"})
+            return "Token is not valid."
+        except jwt.ExpiredSignatureError:
+            # jsonify({"error:'Token is expired.'"})
+            return "Token is expired."
+        return method(user_id,*args, **kwargs)
+    return wrapper
 
 
 '''-----------------以下は本機能のAPI-----------------'''
@@ -301,6 +344,19 @@ def test_table():
     new_post = diary(id=1,content='ありがとう', comment='おおきに',time= datetime.now(pytz.timezone('Asia/Tokyo')),user_id=1)
     db.session.add(new_post)
     db.session.commit()
+    return 'DBに保存しました'
+
+#  usersにパスワードと初期のギフトフラグを与えるAPI
+@app.route('/test/user-date',methods=['POST'])
+def test_user():
+    arg=request.form.get("password")
+    app.logger.info(arg)
+    user_post=users(flag=[0 for _ in range(25)],pas=arg)
+    db.session.add(user_post)
+    db.session.commit()
+    # new_post = diary(id=1,content='ありがとう', comment='おおきに',time= datetime.now(pytz.timezone('Asia/Tokyo')),user_id=1)
+    # db.session.add(new_post)
+    # db.session.commit()
     return 'DBに保存しました'
 
 
