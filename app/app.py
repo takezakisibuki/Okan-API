@@ -158,8 +158,6 @@ def rand_api_j():
         user = users.query.filter(users.id == user_id).first()
         if user:
             flag_list = copy.copy(user.flag)
-            app.logger.info(type(user.flag))
-            app.logger.info(type(flag_list))
             if flag_list is not None and 0 <= ran < len(flag_list):
                 flag_list[ran] = 1 
                 user.flag = flag_list
@@ -189,7 +187,29 @@ def rand_api_j():
         }
     return jsonify(data)
 
-
+# 【テスト】⑤ ギフトフラグを取得するAPI パラメータ：user-id
+@app.route('/api/gift-flag',methods=['GET'])
+def gift_flag_api_j():
+    # URLパラメータ
+    params = request.args
+    if 'user-id' in params:
+        user_id = int(params['user-id'])
+        user = users.query.filter(users.id == user_id).first()
+        flag_list = copy.copy(user.flag)
+        if flag_list is not None :
+            test = {
+                "gift_flag": flag_list,
+                "user_id":user_id
+            }
+        else:
+                test = {
+                    "error": "指定されたユーザーが存在しないか、flag_listが正しく設定されていません",
+                }
+    else:
+        test = {
+            "error": "user-idが指定されていません",
+        }
+    return jsonify(test)
 '''-----------------以下はテスト用のAPI-----------------'''
 
 # 【テスト】① 日記を投稿するAPI パラメータ：user-id,diary-content
