@@ -99,7 +99,7 @@ def login_required(method):
             app.logger.info(f"decode is {decoded}")
             user_id=decoded['id']
         except jwt.DecodeError:
-            # jsonify({"error:'Token is not valid.'"})
+            # jsonify({"error":'Token is not valid.'"})
             return "Token is not valid."
         except jwt.ExpiredSignatureError:
             # jsonify({"error:'Token is expired.'"})
@@ -182,28 +182,40 @@ def get_diary():
 @app.route('/api/monthly',methods=['GET'])
 def month_info():
     user_id=request.args.get('user-id')
-    month=request.args.get('month', type=int)
-    # monthの入ったテーブルを作成
-    # select *,to_char(time,'MM') AS month
-    # from diary;
-    # usersテーブルと結合し、month=10のものをピックアップ
-    with engine.connect() as conn:
-        posts=conn.execute(text("SELECT * \
-                            FROM (\
-                            SELECT *,to_char(time,'MM')AS month\
-                            FROM diary\
-                            )AS diary2\
-                            JOIN users\
-                            ON diary2.user_id=users.id\
-                            WHERE(users.id=user_id and diary2.month=month)\
-                            "))
-    hoge=[]
-    for post in posts:
-        hoge.append({
-            "日記ID": post.id,
-            "日付": post.time.strftime('%Y-%m-%d'),
-        })
-    return jsonify(hoge)
+    if not user_id is None:
+        month=request.args.get('month')
+        year=request.args.get('year')
+        if not (month is None) or (year is None):
+            ym=str(year+"-"+month)
+            # ym(year-month)の入ったテーブルを作成
+            # SELECT *,to_char(time,'YYYY-MM') AS ym
+            # FROM diary;
+            # usersテーブルと結合し、diary2.ym=ymのものをピックアップ
+            with engine.connect() as conn:
+                posts=conn.execute(text("SELECT diary2.id,diary2.time \
+                                    FROM (\
+                                    SELECT *,to_char(time,'YYYY-MM')AS ym\
+                                    FROM diary\
+                                    )AS diary2\
+                                    JOIN users\
+                                    ON diary2.user_id=users.id\
+                                    WHERE(users.id=user_id and diary2.ym=ym)\
+                                    "))
+            year_month_diary=[]
+            for post in posts:
+                year_month_diary.append({
+                    "日記ID": post.id,
+                    "日付": post.time.strftime('%Y-%m-%d'),
+                })
+        else:
+            year_month_diary={
+                "error":"Year ro Month have not been entered"
+            }
+    else:
+        year_month_diary={
+            "error":"Please input a user-id"
+        }
+    return jsonify(year_month_diary)
 
 # ④ ギフトガチャを回すAPI パラメータ：user-id
 @app.route('/api/gift-rand', methods=['POST'])
