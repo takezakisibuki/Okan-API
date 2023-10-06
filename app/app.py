@@ -130,10 +130,19 @@ def okan_api():
             new_record=diary(content=content,comment=comment["choices"][0]["message"]["content"],time=date_today,user_id=user_id)
             db.session.add(new_record)
             db.session.commit()
+            diary_dates=db.session.query(diary).filter(diary.user_id==user_id,diary.time==date_today)
+            for diary_date in diary_dates:
+                test={
+                    "id":diary_date.id,
+                    "content":diary_date.content,
+                    "comment":diary_date.comment,
+                    "time":diary_date.time,
+                    "user_id":diary_date.user_id,
+                }
 
-            test = {
-                "comment": comment["choices"][0]["message"]["content"],
-            }
+            # test = {
+            #     "comment": comment["choices"][0]["message"]["content"],
+            # }
         # 正しくなければエラーを返す
         else:
             test = {
