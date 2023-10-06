@@ -16,6 +16,7 @@ import pytz
 import copy
 import jwt
 import functools
+import bcrypt
 
 # 最初の最初のおまじない（Flask）
 app = Flask(__name__)
@@ -78,7 +79,8 @@ def authorize():
     if user_pass is None:
         return jsonify({"error":f"Your id is not registered: input id is {input_id}"})
     # パスワードが間違っていればエラーを返す
-    if not user_pass[0]==input_password:
+    app.logger.info(bcrypt.__version__)
+    if not bcrypt.checkpw(input_password.encode('utf-8'), user_pass[0].encode('utf-8')):
         return jsonify({"error":f"Your password is wrong: input password is {input_password}"})
     # トークンを時間とidから生成
     exp = datetime.utcnow() + timedelta(hours=1)
@@ -107,7 +109,28 @@ def login_required(method):
         return method(user_id,*args, **kwargs)
     return wrapper
 
-
+@app.route('/api/registration', methods=['POST'])
+def register_user():
+    db.create_all()
+    user_id = request.form.get('user-id')
+    password = request.form.get('password')
+    app.logger.info(user_id)
+    app.logger.info(password)
+    if not user_id or not password:
+        return jsonify({"error": "ユーザーIDとパスワードを提供してください"})
+    existing_user = users.query.filter_by(id=user_id).first()
+    app.logger.info("ここにはきています")
+    if existing_user:
+        return jsonify({"error": "ユーザーは既に登録されています"})
+    # パスワードをハッシュ化して保存
+    app.logger.info("ここにはきています")
+    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    password_hash = password_hash.decode('utf8')
+    app.logger.info(password_hash)
+    new_user = users(id=user_id,flag=[0 for _ in range(25)],pas=password_hash)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"message": "ユーザーが登録されました", "user_id": user_id})
 '''-----------------以下は本機能のAPI-----------------'''
 
 # ① [POST] 日記保存とオカンコメントの生成＆格納API

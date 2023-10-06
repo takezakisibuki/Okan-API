@@ -7,3 +7,4 @@ requests
 flask_swagger_ui
 pytz
 pyjwt
+bcrypt==3.1.3
