@@ -143,7 +143,7 @@ def swag():
                             "in": "query",
                             "description": "月",
                             "required": True,
-                            "type": "integer",
+                            "type": "integer"
                         },
                     ],
                     "responses": {
@@ -235,6 +235,52 @@ def swag():
                                     "gift_flag": {
                                         "type": "array",
                                         "example": [0 for _ in range(25)]
+                                    },
+                                },
+                            }
+                        }
+                    },
+                }
+            },
+            "/authorize": {
+                "post": {
+                    "tags": [
+                        "okan-api(WIP) まだ実装してないよ"
+                    ],
+                    "summary": "API認証用のトークン発行API",
+                    "description": "",
+                    "consumes": [
+                        "multipart/form-data"
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "in": "query",
+                            "description": "ユーザid",
+                            "required": True,
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        {
+                            "name": "password",
+                            "in": "query",
+                            "description": "パスワード",
+                            "required": True,
+                            "type": "string"
+                        },
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "successful operation",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "token": {
+                                        "token": "hogehogefugafuga",
+                                        "id": "int"
                                     },
                                 },
                             }
@@ -369,6 +415,13 @@ def swag():
                             "description": "月",
                             "required": True,
                             "type": "integer",
+                        },
+                         {
+                            "name": "year",
+                            "in": "query",
+                            "description": "年",
+                            "required": True,
+                            "type": "integer"
                         },
                     ],
                     "responses": {

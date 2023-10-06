@@ -136,7 +136,7 @@ def okan_api():
                     "id":diary_date.id,
                     "content":diary_date.content,
                     "comment":diary_date.comment,
-                    "time":diary_date.time,
+                    "time":diary_date.time.strftime('%Y-%m-%d'),
                     "user_id":diary_date.user_id,
                 }
 
@@ -158,16 +158,27 @@ def okan_api():
 @app.route('/api/diary',methods=['GET'])
 def get_diary():
     diary_id=request.args.get('diary-id')
-    posts=diary.query.filter(diary.id==diary_id).all()
-    # app.logger.info(type(posts))
-    for post in posts:
+    # diary_id をクエリパラメータからゲットできていれば
+    if not diary_id is None:
+        posts=diary.query.filter(diary.id==diary_id).all()
+        # 入力されたIDの日記が見つかれば内容を返す。
+        if len(posts)!=0:
+            for post in posts:
+                diary_json={
+                    "id": post.id,
+                    "内容": post.content,
+                    "コメント": post.comment,
+                    "日付": post.time.strftime('%Y-%m-%d'),
+                }
+        else:
+            diary_json={
+            "error": "Not find a diary for this ID"
+            }
+    else:
         diary_json={
-            "id": post.id,
-            "内容": post.content,
-            "コメント": post.comment,
-            "日付": post.time.strftime('%Y-%m-%d'),
+            "error": "Please input diary_id"
         }
-    app.logger.info(diary_json)
+
     return jsonify(diary_json)
 
 # ③ 日記を取得するAPI パラメータ：diary-id
@@ -193,7 +204,7 @@ def month_info():
     for post in posts:
         hoge.append({
             "日記ID": post.id,
-            "日付": post.time
+            "日付": post.time.strftime('%Y-%m-%d'),
         })
     return jsonify(hoge)
 
