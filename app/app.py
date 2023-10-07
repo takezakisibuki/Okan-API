@@ -307,6 +307,32 @@ def gift_flag_api_j():
             "error": "user-idが指定されていません",
         }
     return jsonify(test)
+
+@app.route("/api/delete_diary", methods=["DELETE"])
+def deleteDiary():
+    try:
+        diary_id_str = request.form.get('diary_id')
+        app.logger.info(diary_id_str)
+        if diary_id_str is None:
+            return jsonify({'error': '日記IDパラメータが不足しています'})
+
+        diary_id = int(diary_id_str)
+        app.logger.info(diary_id)
+
+        # diaryテーブルからエントリを取得
+        diary_entry = db.session.query(diary).filter_by(id=diary_id).first()
+        
+        app.logger.info(diary_entry)
+
+        if diary_entry:
+            db.session.delete(diary_entry)
+            db.session.commit()
+            return jsonify({'message': '日記エントリが正常に削除されました'})
+        else:
+            return jsonify({'error': '日記エントリが見つかりません'})
+
+    except ValueError:
+        return jsonify({'error': '無効な日記IDです'})
 '''-----------------以下はテスト用のAPI-----------------'''
 
 # 【テスト】① 日記を投稿するAPI パラメータ：user-id,diary-content
@@ -432,7 +458,6 @@ def test_user():
     # db.session.add(new_post)
     # db.session.commit()
     return 'DBに保存しました'
-
 
 '''-----------------以下はswaggerの記述-----------------'''
 
