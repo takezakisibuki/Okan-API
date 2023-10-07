@@ -520,6 +520,99 @@ def swag():
                     },
                 }
             },
+            #ユーザを登録しよう
+            "/api/registration": {
+                "post": {
+                    "tags": [
+                        "okan-api(WIP) まだ実装してないよ"
+                    ],
+                    "summary": "ユーザを登録しよう",
+                    "description": "",
+                    "consumes": [
+                        "multipart/form-data"
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "parameters": [
+                        {
+                            "name": "user-id",
+                            "in": "formData",
+                            "description": "ユーザid",
+                            "required": True,
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        {
+                            "name": "password",
+                            "in": "formData",
+                            "description": "パスワード",
+                            "required": True,
+                            "type": "string"
+                        },
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "successful operation",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "diary-content": {
+                                        "message": "ユーザーが登録されました", 
+                                        "user_id": 111
+                                    },
+                                },
+                            }
+                        }
+                    },
+                }
+            },
+             "/authorize": {
+                "post": {
+                    "tags": [
+                        "okan-api(WIP) まだ実装してないよ"
+                    ],
+                    "summary": "API認証用のトークン発行API",
+                    "description": "",
+                    "consumes": [
+                        "multipart/form-data"
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "in": "formData",
+                            "description": "ユーザid",
+                            "required": True,
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        {
+                            "name": "password",
+                            "in": "formData",
+                            "description": "パスワード",
+                            "required": True,
+                            "type": "string"
+                        },
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "successful operation",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "token": {
+                                        "token": "hogehogefugafuga",
+                                        "id": "int"
+                                    },
+                                },
+                            }
+                        }
+                    },
+                }
+            },
         },
         "externalDocs": {
             "description": "Find out more about Swagger",
