@@ -14,7 +14,7 @@ jobs:
           host: ${{ secrets.HOST_NAME }}
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
-          script:
+          script: |
             cd /var/git/Okan-API/
             git checkout .
             git pull origin master
