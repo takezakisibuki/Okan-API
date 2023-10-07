@@ -163,7 +163,7 @@ def okan_api():
                     "id":diary_date.id,
                     "content":diary_date.content,
                     "comment":diary_date.comment,
-                    "time":diary_date.time.strftime('%Y-%m-%d'),
+                    "date":diary_date.time.strftime('%Y-%m-%d'),
                     "user_id":diary_date.user_id,
                 }
         # 正しくなければエラーを返す
@@ -189,9 +189,9 @@ def get_diary():
             for post in posts:
                 diary_json={
                     "id": post.id,
-                    "内容": post.content,
-                    "コメント": post.comment,
-                    "日付": post.time.strftime('%Y-%m-%d'),
+                    "content": post.content,
+                    "comment": post.comment,
+                    "date": post.time.strftime('%Y-%m-%d'),
                 }
         else:
             diary_json={
@@ -231,8 +231,8 @@ def month_info():
             year_month_diary=[]
             for post in posts:
                 year_month_diary.append({
-                    "日記ID": post.id,
-                    "日付": post.time.strftime('%Y-%m-%d'),
+                    "id": post.id,
+                    "date": post.time.strftime('%Y-%m-%d'),
                 })
         else:
             year_month_diary={
@@ -282,7 +282,7 @@ def rand_api_j():
         }
     return jsonify(data)
 
-# 【テスト】⑤ ギフトフラグを取得するAPI パラメータ：user-id
+# ⑤ ギフトフラグを取得するAPI パラメータ：user-id
 @app.route('/api/gift-flag',methods=['GET'])
 def gift_flag_api_j():
     # URLパラメータ
@@ -307,6 +307,7 @@ def gift_flag_api_j():
             "error": "user-idが指定されていません",
         }
     return jsonify(test)
+
 '''-----------------以下はテスト用のAPI-----------------'''
 
 # 【テスト】① 日記を投稿するAPI パラメータ：user-id,diary-content
@@ -315,7 +316,11 @@ def test_okan_api():
     params = request.form
     if 'user-id' in params and 'diary-content' in params:
         test = {
+            "id": 1,
             "comment": '"'+params.get('diary-content')+'"に対するおかんからのテストコメントやでぇ',
+            "content": params.get('diary-content'),
+            "date": "2023-10-03",
+            "user_id":1,
         }
     else:
         test = {
@@ -334,21 +339,21 @@ def diary_api():
                 'id':params.get('diary-id'),
                 'content': "あんたの日記内容やでぇ",
                 'comment': "おかんからのテストコメントやでぇ",
-                'time': '2023-10-1',
+                'date': '2023-10-1',
             }
         elif params.get('diary-id',type=int) == 2:
             test = {
                 'id':params.get('diary-id'),
                 'content': "あんたの日記内容やでぇ.2",
                 'comment': "おかんからのテストコメントやでぇ.2",
-                'time': '2023-10-2',
+                'date': '2023-10-2',
             }
         else:
             test = {
                 'id':params.get('diary-id'),
                 'content': "None",
                 'comment': "この日記は存在せーへんでぇ",
-                'time': '1970-1-1',
+                'date': '1970-1-1',
             }
     else:
         test = {
@@ -386,6 +391,8 @@ def rand_api():
     params = request.form
     if 'user-id' in params:
         test = {
+            "user_id":1,
+            "gift_flag": [0 for _ in range(25)],
             "gift_number": random.randrange(25),
         }
     else:
@@ -401,6 +408,7 @@ def gift_flag_api():
     params = request.args
     if 'user-id' in params:
         test = {
+            "user_id":1,
             "gift_flag": [0 for _ in range(25)],
         }
     else:
@@ -428,9 +436,6 @@ def test_user():
     user_post=users(flag=[0 for _ in range(25)],pas=arg)
     db.session.add(user_post)
     db.session.commit()
-    # new_post = diary(id=1,content='ありがとう', comment='おおきに',time= datetime.now(pytz.timezone('Asia/Tokyo')),user_id=1)
-    # db.session.add(new_post)
-    # db.session.commit()
     return 'DBに保存しました'
 
 
