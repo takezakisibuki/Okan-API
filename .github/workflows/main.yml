@@ -1,0 +1,22 @@
+name: CD
+on:
+  push:
+    branches: master
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install SSH Key for Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          host: ${{ secrets.HOST_NAME }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /var/git/Okan-API/
+            git pull
+            make refresh-app
+            make run
+          
