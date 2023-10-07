@@ -14,9 +14,10 @@ jobs:
           host: ${{ secrets.HOST_NAME }}
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
-          script: |
+          script:
             cd /var/git/Okan-API/
-            git pull
+            git checkout .
+            git pull origin master
             make refresh-app
             make run
           
