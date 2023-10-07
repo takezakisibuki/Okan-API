@@ -1,7 +1,7 @@
 import requests
 def create( content ):
     # 日記内容をOpenAIに投げる
-    api_key = ""
+    api_key = None
     header = {
         "Content-Type" : "application/json",
         "Authorization" : f"Bearer {api_key}",

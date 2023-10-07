@@ -205,6 +205,7 @@ def get_diary():
 @app.route('/api/monthly',methods=['GET'])
 def month_info():
     user_id=request.args.get('user-id')
+    #ここにそもそもuser_idを識別するid文がないのが問題
     if not user_id is None:
         month=request.args.get('month')
         year=request.args.get('year')
@@ -215,15 +216,15 @@ def month_info():
             # FROM diary;
             # usersテーブルと結合し、diary2.ym=ymのものをピックアップ
             with engine.connect() as conn:
-                posts=conn.execute(text("SELECT diary2.id,diary2.time \
-                                    FROM (\
-                                    SELECT *,to_char(time,'YYYY-MM')AS ym\
-                                    FROM diary\
-                                    )AS diary2\
-                                    JOIN users\
-                                    ON diary2.user_id=users.id\
-                                    WHERE(users.id=user_id and diary2.ym=ym)\
-                                    "))
+                sql_query = text("SELECT diary2.id, diary2.time \
+                  FROM ( \
+                    SELECT *, to_char(time, 'YYYY-MM') AS ym \
+                    FROM diary \
+                  ) AS diary2 \
+                  JOIN users ON diary2.user_id = users.id \
+                  WHERE users.id = :user_id AND diary2.ym = :ym")
+                params = {"user_id": user_id, "ym": ym}
+                posts = conn.execute(sql_query,params)
             year_month_diary=[]
             for post in posts:
                 year_month_diary.append({
@@ -232,7 +233,7 @@ def month_info():
                 })
         else:
             year_month_diary={
-                "error":"Year ro Month have not been entered"
+                "error":"Year or Month have not been entered"
             }
     else:
         year_month_diary={
@@ -262,22 +263,18 @@ def rand_api_j():
                 data = {
                     "id":user.id,
                     "flag":user.flag,
-                    "flag2":flag_list,
                     "gift_number": ran
                     }
-                test = {
-                    "gift_number": ran,
-                }
             else:
-                test = {
+                data = {
                     "error": "指定されたユーザーが存在しないか、flag_listが正しく設定されていません",
                 }
         else:
-            test = {
+            data = {
                 "error": "指定されたユーザーが存在しません",
             }
     else:
-        test = {
+        data = {
             "error": "user-idが指定されていません",
         }
     return jsonify(data)
