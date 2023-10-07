@@ -145,6 +145,9 @@ def okan_api():
     # db内にすでに今日日記が書かれてあるかの確認
     posts=db.session.query(diary).filter(diary.user_id==user_id,diary.time==date_today).all()
     # 書かれてないなら日記の内容とその他の情報をdiaryに保存
+    user = db.session.query(users).filter(users.id == user_id).first()
+    if not user:
+        return jsonify({"error": "指定されたユーザIDは存在しません"})
     if len(posts)==0:
         # パラメータが正しければ保存
         if 'user-id' in params and 'diary-content' in params:
@@ -287,6 +290,8 @@ def gift_flag_api_j():
     if 'user-id' in params:
         user_id = int(params['user-id'])
         user = users.query.filter(users.id == user_id).first()
+        if not user:
+            return jsonify({"error": "指定されたユーザIDは存在しません"})
         flag_list = copy.copy(user.flag)
         if flag_list is not None :
             test = {
