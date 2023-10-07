@@ -567,7 +567,7 @@ def swag():
                     },
                 }
             },
-             "/authorize": {
+            "/authorize": {
                 "post": {
                     "tags": [
                         "okan-api(WIP) まだ実装してないよ"
@@ -595,6 +595,45 @@ def swag():
                             "description": "パスワード",
                             "required": True,
                             "type": "string"
+                        },
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "successful operation",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "token": {
+                                        "token": "hogehogefugafuga",
+                                        "id": "int"
+                                    },
+                                },
+                            }
+                        }
+                    },
+                }
+            },
+            "/api/delete_diary": {
+                "delete": {
+                    "tags": [
+                        "okan-api(WIP) まだ実装してないよ"
+                    ],
+                    "summary": "日記削除のAPI",
+                    "description": "",
+                    "consumes": [
+                        "multipart/form-data"
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "parameters": [
+                        {
+                            "name": "diary-id",
+                            "in": "formData",
+                            "description": "削除したい日記のdiary_id",
+                            "required": True,
+                            "type": "integer",
+                            "format": "int64"
                         },
                     ],
                     "responses": {
