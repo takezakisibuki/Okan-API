@@ -311,7 +311,7 @@ def gift_flag_api_j():
 @app.route("/api/delete_diary", methods=["DELETE"])
 def deleteDiary():
     try:
-        diary_id_str = request.form.get('diary_id')
+        diary_id_str = request.form.get('diary-id')
         app.logger.info(diary_id_str)
         if diary_id_str is None:
             return jsonify({'error': '日記IDパラメータが不足しています'})

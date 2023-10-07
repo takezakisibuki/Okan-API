@@ -628,7 +628,7 @@ def swag():
                     ],
                     "parameters": [
                         {
-                            "name": "diary_id",
+                            "name": "diary-id",
                             "in": "formData",
                             "description": "削除したい日記のdiary_id",
                             "required": True,
