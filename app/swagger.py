@@ -17,235 +17,11 @@ def swag():
             }
         },
         "paths": {
-            # ① ユーザ情報を取得するAPI パラメータ：user-id
-            "/api/test/okan-api": {
+            # A. 認証用のトークン発行API
+            "/api/authorize": {
                 "post": {
                     "tags": [
-                        "test"
-                    ],
-                    "summary": "【テスト】日記を投稿するAPI",
-                    "description": "",
-                    "consumes": [
-                        "multipart/form-data"
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "user-id",
-                            "in": "formData",
-                            "description": "ユーザid",
-                            "required": True,
-                            "type": "integer",
-                            "format": "int64"
-                        },
-                        {
-                            "name": "diary-content",
-                            "in": "formData",
-                            "description": "日記内容",
-                            "required": True,
-                            "type": "string"
-                        },
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "successful operation",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "diary-content": {
-                                        "type": "string",
-                                        "example": "今日はおかんがおかんしてた"
-                                    },
-                                },
-                            }
-                        }
-                    },
-                }
-            },
-            # ② 日記を取得するAPI
-            "/api/test/diary": {
-                "get": {
-                    "tags": [
-                        "test"
-                    ],
-                    "summary": "【テスト】日記を取得するAPI",
-                    "description": "",
-                    "consumes": [
-                        "multipart/form-data"
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "diary-id",
-                            "in": "query",
-                            "description": "日記id",
-                            "required": True,
-                            "type": "integer",
-                        },
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "successful operation",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    'id':{
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
-                                    'content':{
-                                        "type": "string",
-                                        "example": "あんたの日記内容やでぇ"
-                                    },
-                                    'comment': {
-                                        "type": "string",
-                                        "example": "おかんからのテストコメントやでぇ"
-                                    },
-                                    'time': {
-                                        "type": "string",
-                                        "example": "2023-10-1"
-                                    },
-                                },
-                            }
-                        }
-                    },
-                }
-            },
-            # ③ 指定月の日記一覧を取得するAPI
-            "/api/test/monthly": {
-                "get": {
-                    "tags": [
-                        "test"
-                    ],
-                    "summary": "【テスト】指定月の日記一覧を取得するAPI",
-                    "description": "",
-                    "consumes": [
-                        "multipart/form-data"
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "user-id",
-                            "in": "query",
-                            "description": "ユーザid",
-                            "required": True,
-                            "type": "integer",
-                            "format": "int64"
-                        },
-                        {
-                            "name": "month",
-                            "in": "query",
-                            "description": "月",
-                            "required": True,
-                            "type": "integer"
-                        },
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "successful operation",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "diary_list": {
-                                        "type": "array",
-                                        "example":[{ "id": 1, "date": "2023-10-1" },{ "id": 2, "date": "2023-10-2" }]
-                                    },
-                                },
-                            }
-                        }
-                    },
-                }
-            },
-            # ④ ギフトガチャを回すAPI
-            "/api/test/gift-rand": {
-                "post": {
-                    "tags": [
-                        "test"
-                    ],
-                    "summary": "【テスト】ギフトガチャを回すAPI",
-                    "description": "",
-                    "consumes": [
-                        "multipart/form-data"
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "user-id",
-                            "in": "formData",
-                            "description": "ユーザid",
-                            "required": True,
-                            "type": "integer",
-                            "format": "int64"
-                        },
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "successful operation",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "gift_number": {
-                                        "type": "integer",
-                                        "example": 20
-                                    },
-                                },
-                            }
-                        }
-                    },
-                }
-            },
-            # ⑤ ギフトフラグを取得するAPI
-            "/api/test/gift-flag": {
-                "get": {
-                    "tags": [
-                        "test"
-                    ],
-                    "summary": "【テスト】ギフトフラグを取得するAPI",
-                    "description": "",
-                    "consumes": [
-                        "multipart/form-data"
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "user-id",
-                            "in": "query",
-                            "description": "ユーザid",
-                            "required": True,
-                            "type": "integer",
-                            "format": "int64"
-                        },
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "successful operation",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "gift_flag": {
-                                        "type": "array",
-                                        "example": [0 for _ in range(25)]
-                                    },
-                                },
-                            }
-                        }
-                    },
-                }
-            },
-            "/authorize": {
-                "post": {
-                    "tags": [
-                        "okan-api(WIP) まだ実装してないよ"
+                        "認証用API"
                     ],
                     "summary": "API認証用のトークン発行API",
                     "description": "",
@@ -278,9 +54,60 @@ def swag():
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "token": {
-                                        "token": "hogehogefugafuga",
-                                        "id": "int"
+                                    'user_id':{
+                                        "type": "intger",
+                                        "example": "123"
+                                    },
+                                    'token':{
+                                        "type": "string",
+                                        "example": "hogefugahoge"
+                                    },
+                                },
+                            }
+                        }
+                    },
+                }
+            },
+            # B. ユーザを登録しよう
+            "/api/registration": {
+                "post": {
+                    "tags": [
+                        "認証用API"
+                    ],
+                    "summary": "ユーザを登録しよう",
+                    "description": "",
+                    "consumes": [
+                        "multipart/form-data"
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "parameters": [
+                        {
+                            "name": "user-id",
+                            "in": "formData",
+                            "description": "ユーザid",
+                            "required": True,
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        {
+                            "name": "password",
+                            "in": "formData",
+                            "description": "パスワード",
+                            "required": True,
+                            "type": "string"
+                        },
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "successful operation",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "diary-content": {
+                                        "message": "ユーザーが登録されました", 
+                                        "user_id": 111
                                     },
                                 },
                             }
@@ -292,7 +119,7 @@ def swag():
             "/api/okan-api": {
                 "post": {
                     "tags": [
-                        "okan-api(WIP) まだ実装してないよ"
+                        "おかんAPI"
                     ],
                     "summary": "日記を投稿するAPI",
                     "description": "",
@@ -325,9 +152,25 @@ def swag():
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "diary-content": {
+                                    'id':{
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    'content':{
                                         "type": "string",
-                                        "example": "今日はおかんがおかんしてた"
+                                        "example": "あんたの日記内容やでぇ"
+                                    },
+                                    'comment': {
+                                        "type": "string",
+                                        "example": "おかんからのテストコメントやでぇ"
+                                    },
+                                    'date': {
+                                        "type": "string",
+                                        "example": "2023-10-1"
+                                    },
+                                    'user_id':{
+                                        "type": "integer",
+                                        "example": "123"
                                     },
                                 },
                             }
@@ -339,7 +182,7 @@ def swag():
             "/api/diary": {
                 "get": {
                     "tags": [
-                        "okan-api(WIP) まだ実装してないよ"
+                        "おかんAPI"
                     ],
                     "summary": "日記を取得するAPI",
                     "description": "",
@@ -376,7 +219,7 @@ def swag():
                                         "type": "string",
                                         "example": "おかんからのテストコメントやでぇ"
                                     },
-                                    'time': {
+                                    'date': {
                                         "type": "string",
                                         "example": "2023-10-1"
                                     },
@@ -390,7 +233,7 @@ def swag():
             "/api/monthly": {
                 "get": {
                     "tags": [
-                        "okan-api(WIP) まだ実装してないよ"
+                        "おかんAPI"
                     ],
                     "summary": "指定月の日記一覧を取得するAPI",
                     "description": "",
@@ -444,7 +287,7 @@ def swag():
             "/api/gift-rand": {
                 "post": {
                     "tags": [
-                        "okan-api(WIP) まだ実装してないよ"
+                        "おかんAPI"
                     ],
                     "summary": "ギフトガチャを回すAPI",
                     "description": "",
@@ -470,6 +313,14 @@ def swag():
                             "schema": {
                                 "type": "object",
                                 "properties": {
+                                    'user_id':{
+                                        "type": "integer",
+                                        "example": "123"
+                                    },
+                                    "gift_flag": {
+                                        "type": "array",
+                                        "example": [0 for _ in range(25)]
+                                    },
                                     "gift_number": {
                                         "type": "integer",
                                         "example": 20
@@ -484,7 +335,7 @@ def swag():
             "/api/gift-flag": {
                 "get": {
                     "tags": [
-                        "okan-api(WIP) まだ実装してないよ"
+                        "おかんAPI"
                     ],
                     "summary": "ギフトフラグを取得するAPI",
                     "description": "",
@@ -510,6 +361,10 @@ def swag():
                             "schema": {
                                 "type": "object",
                                 "properties": {
+                                    'user_id':{
+                                        "type": "integer",
+                                        "example": "123"
+                                    },
                                     "gift_flag": {
                                         "type": "array",
                                         "example": [0 for _ in range(25)]
@@ -520,103 +375,10 @@ def swag():
                     },
                 }
             },
-            #ユーザを登録しよう
-            "/api/registration": {
-                "post": {
-                    "tags": [
-                        "okan-api(WIP) まだ実装してないよ"
-                    ],
-                    "summary": "ユーザを登録しよう",
-                    "description": "",
-                    "consumes": [
-                        "multipart/form-data"
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "user-id",
-                            "in": "formData",
-                            "description": "ユーザid",
-                            "required": True,
-                            "type": "integer",
-                            "format": "int64"
-                        },
-                        {
-                            "name": "password",
-                            "in": "formData",
-                            "description": "パスワード",
-                            "required": True,
-                            "type": "string"
-                        },
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "successful operation",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "diary-content": {
-                                        "message": "ユーザーが登録されました", 
-                                        "user_id": 111
-                                    },
-                                },
-                            }
-                        }
-                    },
-                }
-            },
-            "/authorize": {
-                "post": {
-                    "tags": [
-                        "okan-api(WIP) まだ実装してないよ"
-                    ],
-                    "summary": "API認証用のトークン発行API",
-                    "description": "",
-                    "consumes": [
-                        "multipart/form-data"
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "id",
-                            "in": "formData",
-                            "description": "ユーザid",
-                            "required": True,
-                            "type": "integer",
-                            "format": "int64"
-                        },
-                        {
-                            "name": "password",
-                            "in": "formData",
-                            "description": "パスワード",
-                            "required": True,
-                            "type": "string"
-                        },
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "successful operation",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "token": {
-                                        "token": "hogehogefugafuga",
-                                        "id": "int"
-                                    },
-                                },
-                            }
-                        }
-                    },
-                }
-            },
             "/api/delete_diary": {
                 "delete": {
                     "tags": [
-                        "okan-api(WIP) まだ実装してないよ"
+                        "開発者向けAPI"
                     ],
                     "summary": "日記削除のAPI",
                     "description": "",
@@ -642,9 +404,9 @@ def swag():
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "token": {
-                                        "token": "hogehogefugafuga",
-                                        "id": "int"
+                                    "message": {
+                                        "type": "string",
+                                        "example": "日記エントリが正常に削除されました"
                                     },
                                 },
                             }
