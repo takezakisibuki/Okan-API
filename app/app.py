@@ -130,7 +130,8 @@ def register_user():
 '''-----------------以下は本機能のAPI-----------------'''
 # ① [POST] 日記保存とオカンコメントの生成＆格納API
 @app.route('/api/okan-api',methods=['POST'])
-def okan_api():
+@login_required
+def okan_api(login_required_userID):
     # ユーザIDと日記内容のフォームパラメータをゲット
     params = request.form
     # 今日の日付を日本時間で取得
@@ -177,7 +178,8 @@ def okan_api():
 
 # ② 日記を取得するAPI パラメータ：diary-id
 @app.route('/api/diary',methods=['GET'])
-def get_diary():
+@login_required
+def get_diary(login_required_userID):
     diary_id=request.args.get('diary-id')
     # diary_id をクエリパラメータからゲットできていれば
     if not diary_id is None:
@@ -209,7 +211,8 @@ def get_diary():
 
 # ③ 日記を取得するAPI パラメータ：diary-id
 @app.route('/api/monthly',methods=['GET'])
-def month_info():
+@login_required
+def month_info(login_required_userID):
     user_id=request.args.get('user-id')
     #ここにそもそもuser_idを識別するid文がないのが問題
     if not user_id is None:
@@ -253,7 +256,8 @@ def month_info():
 
 # ④ ギフトガチャを回すAPI パラメータ：user-id
 @app.route('/api/gift-rand', methods=['POST'])
-def rand_api_j():
+@login_required
+def rand_api_j(login_required_userID):
     # URLパラメータ
     params = request.form
     if 'user-id' in params:
@@ -300,7 +304,8 @@ def rand_api_j():
 
 # ⑤ ギフトフラグを取得するAPI パラメータ：user-id
 @app.route('/api/gift-flag',methods=['GET'])
-def gift_flag_api_j():
+@login_required
+def gift_flag_api_j(login_required_userID):
     # URLパラメータ
     params = request.args
     if 'user-id' in params:
