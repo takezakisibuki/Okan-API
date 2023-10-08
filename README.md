@@ -13,7 +13,7 @@
 4. コンテナをビルドします。<br>
     `make up`
 5. Flaskが起動したか確認します。<br>
-    ブラウザで`http://localhost:8080`にアクセス<br>
+    ブラウザで`http://localhost`にアクセス<br>
     しぶきくんの作ったTodoアプリが見れたらOKです！
 6. migrateを行います<br>
     `make app-in`<br>
@@ -43,24 +43,5 @@
 パッケージ足りないとか、そういう系のエラーはここにでます。<br>
 ちなみにuwsgiはnginx(webコンテナ)とflask(appコンテナ)の架け橋です。（あまりにもざっくり）
 
-## フロントエンド組の追加作業
-`docker-compose.yml`の中の<br>
-    ```
-    ports:
-      - "8080:80"
-      # - "0.0.0.0:80:80"
-    ```
-を<br>
-    ```
-    ports:
-      # - "8080:80"
-    　- "0.0.0.0:80:80"
-    ```
-に変えてください。<br>
-
 ## APIの仕様書について
-### バックエンド組はこう
-`http://localhost:8080/api/docs`
-
-### フロントエンド組はこう
-`http://0.0.0.0/api/docs`
+`http://v157-7-194-194.iq2e.static.cnode.io/api/docs`
