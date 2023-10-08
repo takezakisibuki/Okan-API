@@ -41,6 +41,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@flask_db
 engine = create_engine(f'postgresql://postgres:postgres@flask_db:5432/postgres', echo=True)
 db = SQLAlchemy(app)
 
+
+'''-----------------以下はデータベースモデル-----------------'''
 # ユーザテーブル
 class users(db.Model):
     __tablename__ = 'users'
@@ -59,35 +61,9 @@ class diary(db.Model):
     time = db.Column(db.Date(), nullable=False)
     user_id=db.Column(db.Integer,db.ForeignKey("users.id", name="fk_test_results_00",onupdate='CASCADE', ondelete='CASCADE'),nullable=False)
 
-# テスト用のテーブル（擬似フロントエンドから使用）
-class Post(db.Model):
-    __tablename__ = 'persons'
 
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.Text)
-    detail = db.Column(db.Text)
-    due = db.Column(db.DateTime, nullable=False)
-
-@app.route('/authorize',methods=['POST'])
-def authorize():
-    # passwordとidをクエリパラメータとして取得
-    # クエリパラメータでもrequest.form.getで取得。argsだと取って来れない。
-    input_id = request.form.get('id',type=int)
-    input_password = request.form.get('password')
-    user_pass = db.session.query(users.pas).filter(users.id==input_id).first()
-    #idがテーブルに登録されていなければエラーを返す
-    if user_pass is None:
-        return jsonify({"error":f"Your id is not registered: input id is {input_id}"})
-    # パスワードが間違っていればエラーを返す
-    app.logger.info(bcrypt.__version__)
-    if not bcrypt.checkpw(input_password.encode('utf-8'), user_pass[0].encode('utf-8')):
-        return jsonify({"error":f"Your password is wrong: input password is {input_password}"})
-    # トークンを時間とidから生成
-    exp = datetime.utcnow() + timedelta(hours=1)
-    encoded = jwt.encode({'id': input_id,'exp': exp}, 'SECRET_KEY', algorithm='HS256')
-    response = {'user_id':input_id,'token':encoded}
-    return jsonify(response)
-
+'''-----------------以下は認証周りのAPI・メソッド-----------------'''
+# ログイン認証用関数
 def login_required(method):
     @functools.wraps(method)
     def wrapper(*args, **kwargs):
@@ -109,6 +85,28 @@ def login_required(method):
         return method(user_id,*args, **kwargs)
     return wrapper
 
+# A. [POST] id と password をもらってアクセストークンを発行するAPI
+@app.route('/api/authorize',methods=['POST'])
+def authorize():
+    # passwordとidをクエリパラメータとして取得
+    # クエリパラメータでもrequest.form.getで取得。argsだと取って来れない。
+    input_id = request.form.get('id',type=int)
+    input_password = request.form.get('password')
+    user_pass = db.session.query(users.pas).filter(users.id==input_id).first()
+    #idがテーブルに登録されていなければエラーを返す
+    if user_pass is None:
+        return jsonify({"error":f"Your id is not registered: input id is {input_id}"})
+    # パスワードが間違っていればエラーを返す
+    app.logger.info(bcrypt.__version__)
+    if not bcrypt.checkpw(input_password.encode('utf-8'), user_pass[0].encode('utf-8')):
+        return jsonify({"error":f"Your password is wrong: input password is {input_password}"})
+    # トークンを時間とidから生成
+    exp = datetime.utcnow() + timedelta(hours=1)
+    encoded = jwt.encode({'id': input_id,'exp': exp}, 'SECRET_KEY', algorithm='HS256')
+    response = {'user_id':input_id,'token':encoded}
+    return jsonify(response)
+
+# B. [POST] テーブルをマイグレートしてユーザを登録するAPI
 @app.route('/api/registration', methods=['POST'])
 def register_user():
     db.create_all()
@@ -131,8 +129,9 @@ def register_user():
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "ユーザーが登録されました", "user_id": user_id})
-'''-----------------以下は本機能のAPI-----------------'''
 
+
+'''-----------------以下は本機能のAPI-----------------'''
 # ① [POST] 日記保存とオカンコメントの生成＆格納API
 @app.route('/api/okan-api',methods=['POST'])
 def okan_api():
@@ -264,7 +263,7 @@ def rand_api_j():
                 app.logger.info(flag_list)
                 db.session.commit()
                 data = {
-                    "id":user.id,
+                    "user_id":user.id,
                     "flag":user.flag,
                     "gift_number": ran
                     }
@@ -308,6 +307,8 @@ def gift_flag_api_j():
         }
     return jsonify(test)
 
+
+'''-----------------以下はテーブルを操作するデベロッパ向けAPI-----------------'''
 @app.route("/api/delete_diary", methods=["DELETE"])
 def deleteDiary():
     try:
@@ -334,115 +335,6 @@ def deleteDiary():
     except ValueError:
         return jsonify({'error': '無効な日記IDです'})
 
-'''-----------------以下はテスト用のAPI-----------------'''
-
-# 【テスト】① 日記を投稿するAPI パラメータ：user-id,diary-content
-@app.route('/api/test/okan-api',methods=['POST'])
-def test_okan_api():
-    params = request.form
-    if 'user-id' in params and 'diary-content' in params:
-        test = {
-            "id": 1,
-            "comment": '"'+params.get('diary-content')+'"に対するおかんからのテストコメントやでぇ',
-            "content": params.get('diary-content'),
-            "date": "2023-10-03",
-            "user_id":1,
-        }
-    else:
-        test = {
-            "error": "user-idかdiary-contentが指定されていません",
-        }
-    return jsonify(test)
-
-# 【テスト】② 日記を取得するAPI パラメータ：diary-id
-@app.route('/api/test/diary',methods=['GET'])
-def diary_api():
-    # URLパラメータ
-    params = request.args
-    if 'diary-id' in params:
-        if params.get('diary-id',type=int) == 1:
-            test = {
-                'id':params.get('diary-id'),
-                'content': "あんたの日記内容やでぇ",
-                'comment': "おかんからのテストコメントやでぇ",
-                'date': '2023-10-1',
-            }
-        elif params.get('diary-id',type=int) == 2:
-            test = {
-                'id':params.get('diary-id'),
-                'content': "あんたの日記内容やでぇ.2",
-                'comment': "おかんからのテストコメントやでぇ.2",
-                'date': '2023-10-2',
-            }
-        else:
-            test = {
-                'id':params.get('diary-id'),
-                'content': "None",
-                'comment': "この日記は存在せーへんでぇ",
-                'date': '1970-1-1',
-            }
-    else:
-        test = {
-            "error": "idが指定されていません",
-        }
-    return jsonify(test)
-
-# 【テスト】③ 指定月の日記一覧を取得するAPI パラメータ：user-id,month
-@app.route('/api/test/monthly',methods=['GET'])
-def monthly_api():
-    # URLパラメータ
-    params = request.args
-    if 'user-id' in params and 'month' in params:
-        if 'month' == 10:
-            test = {
-                "diary_list": [
-                    { "id": 1, "date": 2023-10-1 },
-                    { "id": 2, "date": 2023-10-2 },
-                ]
-            }
-        else:
-            test = {
-                "diary_list": []
-            }
-    else:
-        test = {
-            "error": "user-idかmonthが指定されていません",
-        }
-    return jsonify(test)
-
-# 【テスト】④ ギフトガチャを回すAPI パラメータ：user-id
-@app.route('/api/test/gift-rand',methods=['POST'])
-def rand_api():
-    # URLパラメータ
-    params = request.form
-    if 'user-id' in params:
-        test = {
-            "user_id":1,
-            "gift_flag": [0 for _ in range(25)],
-            "gift_number": random.randrange(25),
-        }
-    else:
-        test = {
-            "error": "user-idが指定されていません",
-        }
-    return jsonify(test)
-
-# 【テスト】⑤ ギフトフラグを取得するAPI パラメータ：user-id
-@app.route('/api/test/gift-flag',methods=['GET'])
-def gift_flag_api():
-    # URLパラメータ
-    params = request.args
-    if 'user-id' in params:
-        test = {
-            "user_id":1,
-            "gift_flag": [0 for _ in range(25)],
-        }
-    else:
-        test = {
-            "error": "user-idが指定されていません",
-        }
-    return jsonify(test)
-
 # 【テスト】日記テーブルにテストレコードを作成する
 @app.route('/test-table',methods=['POST'])
 def test_table():
@@ -463,6 +355,7 @@ def test_user():
     db.session.add(user_post)
     db.session.commit()
     return 'DBに保存しました'
+
 
 '''-----------------以下はswaggerの記述-----------------'''
 
@@ -487,61 +380,10 @@ def swagger_rule():
 
 '''-----------------以下はテストページの記述(後で消す)-----------------'''
 
-# おかん日記風のフロントエンドのモックです
+# webサーバが立ち上がっているか確認するようのルーティング
 @app.route('/', methods=['GET', 'POST'])
 def index():    
-    if request.method == 'GET':
-        posts = Post.query.order_by(Post.due).all()
-        return render_template('index.html', posts=posts,today=date.today())
-    else:
-        # 日記内容と日付を取得
-        title = request.form.get('title')
-        due = request.form.get('due')
-        due = datetime.strptime(due, '%Y-%m-%d')
-
-        # 日記内容をOpenAIに投げて、おかんコメントを取得
-        res = okan_gpt.create( title )
-
-        # 日記内容・おかんコメント・日付をDBに保存
-        new_post = Post(title=title, detail=res["choices"][0]["message"]["content"], due=due)
-        db.session.add(new_post)
-        db.session.commit()
-        return redirect('/') # 変更
-
-@app.route('/create')
-def create():
-    return render_template('create.html')
-
-@app.route('/detail/<int:id>')
-def read(id):
-    post = Post.query.get(id)
-    return render_template('detail.html', post=post)
-
-@app.route('/delete/<int:id>')
-def delete(id):
-    post = Post.query.get(id)
-    db.session.delete(post)
-    db.session.commit()
-    return redirect('/')
-
-@app.route('/update/<int:id>', methods=['GET', 'POST'])
-def update(id):
-    post = Post.query.get(id)
-    if request.method == 'GET':
-        return render_template('update.html', post=post)
-    else:
-        post.title = request.form.get('title')
-        post.detail = request.form.get('detail')
-        post.due = datetime.strptime(request.form.get('due'), '%Y-%m-%d')
-        db.session.commit()
-        return redirect('/')
-
-@app.route('/result',methods=["GET"])
-def result():
-    sql_statement = 'SELECT * FROM persons limit 10'
-    df = pd.read_sql_query(sql=sql_statement, con=engine)
-    return render_template('dbresult.html',table=(df.to_html(classes="mystyle")))
-
+    return ('<h1>webサーバは正常に起動しています.</h1>')
 
 if __name__ == "__main__":
     app.run(debug=True)
