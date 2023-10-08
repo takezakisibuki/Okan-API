@@ -13,57 +13,7 @@ def swag():
             },
         },
         "paths": {
-            # A. 認証用のトークン発行API
-            "/api/authorize": {
-                "post": {
-                    "tags": [
-                        "認証用API"
-                    ],
-                    "summary": "API認証用のトークン発行API",
-                    "description": "",
-                    "consumes": [
-                        "multipart/form-data"
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "id",
-                            "in": "query",
-                            "description": "ユーザid",
-                            "required": True,
-                            "type": "integer",
-                            "format": "int64"
-                        },
-                        {
-                            "name": "password",
-                            "in": "query",
-                            "description": "パスワード",
-                            "required": True,
-                            "type": "string"
-                        },
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "successful operation",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    'user_id':{
-                                        "type": "intger",
-                                        "example": "123"
-                                    },
-                                    'token':{
-                                        "type": "string",
-                                        "example": "hogefugahoge"
-                                    },
-                                },
-                            }
-                        }
-                    },
-                }
-            },
+            # A. 認証用のトークン発行API(...なんだけど公開したら後悔するので公開しません。)
             # B. ユーザを登録しよう
             "/api/registration": {
                 "post": {
