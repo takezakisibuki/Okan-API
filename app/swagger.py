@@ -102,8 +102,12 @@ def swag():
                                 "type": "object",
                                 "properties": {
                                     "diary-content": {
-                                        "message": "ユーザーが登録されました", 
-                                        "user_id": 111
+                                        "type": "string", 
+                                        "example": "ユーザーが登録されました"
+                                    },
+                                    'user_id':{
+                                        "type": "integer",
+                                        "example": "123"
                                     },
                                 },
                             }
