@@ -27,6 +27,7 @@ services:
     command: uwsgi --ini /var/www/app/config/uwsgi.ini
     environment:
       - FLASK_DEBUG=1
+      - API_KEY=${API_KEY}
 
   nginx:
     container_name: flask_nginx

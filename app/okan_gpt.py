@@ -1,7 +1,8 @@
 import requests
+import os
 def create( content ):
     # 日記内容をOpenAIに投げる
-    api_key = None
+    api_key =os.environ.get("API_KEY")
     header = {
         "Content-Type" : "application/json",
         "Authorization" : f"Bearer {api_key}",
