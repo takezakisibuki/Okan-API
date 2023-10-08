@@ -68,6 +68,11 @@ def swag():
             # ① ユーザ情報を取得するAPI パラメータ：user-id
             "/api/okan-api": {
                 "post": {
+                    "security": [
+                        {
+                            "Bearer": []
+                        }
+                    ],
                     "tags": [
                         "おかんAPI"
                     ],
@@ -131,6 +136,11 @@ def swag():
             # ② 日記を取得するAPI
             "/api/diary": {
                 "get": {
+                    "security": [
+                        {
+                            "Bearer": []
+                        }
+                    ],
                     "tags": [
                         "おかんAPI"
                     ],
@@ -182,6 +192,11 @@ def swag():
             # ③ 指定月の日記一覧を取得するAPI
             "/api/monthly": {
                 "get": {
+                    "security": [
+                        {
+                            "Bearer": []
+                        }
+                    ],
                     "tags": [
                         "おかんAPI"
                     ],
@@ -236,6 +251,11 @@ def swag():
             # ④ ギフトガチャを回すAPI
             "/api/gift-rand": {
                 "post": {
+                    "security": [
+                        {
+                            "Bearer": []
+                        }
+                    ],
                     "tags": [
                         "おかんAPI"
                     ],
@@ -284,6 +304,11 @@ def swag():
             # ⑤ ギフトフラグを取得するAPI
             "/api/gift-flag": {
                 "get": {
+                    "security": [
+                        {
+                            "Bearer": []
+                        }
+                    ],
                     "tags": [
                         "おかんAPI"
                     ],
@@ -368,6 +393,22 @@ def swag():
         "externalDocs": {
             "description": "Find out more about Swagger",
             "url": "http://swagger.io"
-	    }
+	    },
+        "securityDefinitions": {
+            "Bearer": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header"
+            }
+        },
+        "components": {
+            "securitySchemes": {
+                "Bearer": {
+                    "type": "http",
+                    "scheme": "bearer",
+                    "bearerFormat": "JWT" 
+                }
+            }
+        },
     }
     return jsonify(json)
