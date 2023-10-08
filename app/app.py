@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, render_template, request, jsonify,abort
+from flask import Flask, redirect, url_for, render_template, request, jsonify,abort,Response
 import psycopg2
 import logging
 from psycopg2.extras import DictCursor
@@ -17,7 +17,7 @@ import copy
 import jwt
 import functools
 import bcrypt
-
+import json
 # 最初の最初のおまじない（Flask）
 app = Flask(__name__)
 
@@ -61,20 +61,17 @@ class diary(db.Model):
     time = db.Column(db.Date(), nullable=False)
     user_id=db.Column(db.Integer,db.ForeignKey("users.id", name="fk_test_results_00",onupdate='CASCADE', ondelete='CASCADE'),nullable=False)
 
-
 '''-----------------以下は認証周りのAPI・メソッド-----------------'''
+
 # ログイン認証用関数
 def login_required(method):
     @functools.wraps(method)
     def wrapper(*args, **kwargs):
         header = request.headers.get('Authorization')
-        app.logger.info(f"header is {header}")
         # token = header.split()
         token=header
         try:
-            app.logger.info(f"token is {token}")
             decoded = jwt.decode(token,'SECRET_KEY',algorithms='HS256')
-            app.logger.info(f"decode is {decoded}")
             user_id=decoded['id']
         except jwt.DecodeError:
             # jsonify({"error":'Token is not valid.'"})
@@ -115,21 +112,20 @@ def register_user():
     app.logger.info(user_id)
     app.logger.info(password)
     if not user_id or not password:
-        return jsonify({"error": "ユーザーIDとパスワードを提供してください"})
+        return jsonify({"error": "ユーザーIDとパスワードを提供してください"}),400
     existing_user = users.query.filter_by(id=user_id).first()
     app.logger.info("ここにはきています")
     if existing_user:
-        return jsonify({"error": "ユーザーは既に登録されています"})
+        return jsonify({"error": "ユーザーは既に登録されています"}),400
     # パスワードをハッシュ化して保存
     app.logger.info("ここにはきています")
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     password_hash = password_hash.decode('utf8')
     app.logger.info(password_hash)
-    new_user = users(id=user_id,flag=[0 for _ in range(25)],pas=password_hash)
+    new_user = users(id=user_id,flag=[0 for _ in range(20)],pas=password_hash)
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({"message": "ユーザーが登録されました", "user_id": user_id})
-
+    return jsonify({"message": "ユーザーが登録されました", "user_id": user_id}),200
 
 '''-----------------以下は本機能のAPI-----------------'''
 # ① [POST] 日記保存とオカンコメントの生成＆格納API
@@ -146,7 +142,7 @@ def okan_api():
     # 書かれてないなら日記の内容とその他の情報をdiaryに保存
     user = db.session.query(users).filter(users.id == user_id).first()
     if not user:
-        return jsonify({"error": "指定されたユーザIDは存在しません"})
+        return jsonify({"error": "指定されたユーザIDは存在しません"}),400
     if len(posts)==0:
         # パラメータが正しければ保存
         if 'user-id' in params and 'diary-content' in params:
@@ -157,6 +153,7 @@ def okan_api():
             db.session.commit()
             # idは一回レコード作成しないと生成されないのでもう一回取りに行く
             diary_dates=db.session.query(diary).filter(diary.user_id==user_id,diary.time==date_today)
+            app.logger.info(diary_dates)
             for diary_date in diary_dates:
                 test={
                     "id":diary_date.id,
@@ -165,16 +162,18 @@ def okan_api():
                     "date":diary_date.time.strftime('%Y-%m-%d'),
                     "user_id":diary_date.user_id,
                 }
+            res=Response(response=json.dumps(test,ensure_ascii=False,indent=4), status=200)
         # 正しくなければエラーを返す
         else:
             test = {
                 "error": "user-idかdiary-contentが指定されていません",
             }
-        return jsonify(test)
+            res=Response(response=json.dumps(test,ensure_ascii=False,indent=4), status=400)
     # 書かれているならエラーを返す
     else :
         test={"error":"今日の日記はもう書いたよ"}
-        return jsonify(test)
+        res=Response(response=json.dumps(test,ensure_ascii=False,indent=4), status=400)
+    return res
 
 # ② 日記を取得するAPI パラメータ：diary-id
 @app.route('/api/diary',methods=['GET'])
@@ -192,16 +191,21 @@ def get_diary():
                     "comment": post.comment,
                     "date": post.time.strftime('%Y-%m-%d'),
                 }
+            res =Response(response=json.dumps(diary_json,ensure_ascii=False,indent=4), status=200)
+
         else:
             diary_json={
             "error": "Not find a diary for this ID"
             }
+            res =Response(response=json.dumps(diary_json,ensure_ascii=False,indent=4), status=400)
+
     else:
         diary_json={
             "error": "Please input diary_id"
         }
-
-    return jsonify(diary_json)
+        res =Response(response=json.dumps(diary_json,ensure_ascii=False,indent=4), status=400)
+    return res
+   
 
 # ③ 日記を取得するAPI パラメータ：diary-id
 @app.route('/api/monthly',methods=['GET'])
@@ -233,15 +237,19 @@ def month_info():
                     "id": post.id,
                     "date": post.time.strftime('%Y-%m-%d'),
                 })
+            res =Response(response=json.dumps(year_month_diary,ensure_ascii=False,indent=4), status=200)
         else:
             year_month_diary={
                 "error":"Year or Month have not been entered"
             }
+            res =Response(response=json.dumps(year_month_diary,ensure_ascii=False,indent=4), status=400)
     else:
         year_month_diary={
             "error":"Please input a user-id"
         }
-    return jsonify(year_month_diary)
+        res =Response(response=json.dumps(year_month_diary,ensure_ascii=False,indent=4), status=400)
+    return res
+    
 
 # ④ ギフトガチャを回すAPI パラメータ：user-id
 @app.route('/api/gift-rand', methods=['POST'])
@@ -250,7 +258,7 @@ def rand_api_j():
     params = request.form
     if 'user-id' in params:
         user_id = int(params['user-id'])
-        ran = random.randint(0, 24)
+        ran = random.randint(0, 20)
 
         # ユーザーの存在を確認
         user = users.query.filter(users.id == user_id).first()
@@ -262,24 +270,33 @@ def rand_api_j():
                 app.logger.info(user.flag)
                 app.logger.info(flag_list)
                 db.session.commit()
+                app.logger.info(type(user.id))
+                app.logger.info(type(user.flag))
+                app.logger.info(type(ran))
                 data = {
                     "user_id":user.id,
                     "flag":user.flag,
                     "gift_number": ran
                     }
+                res =Response(response=json.dumps(data,ensure_ascii=False,indent=4), status=200)
+                
             else:
                 data = {
                     "error": "指定されたユーザーが存在しないか、flag_listが正しく設定されていません",
                 }
+                res =Response(response=json.dumps(data,ensure_ascii=False,indent=4), status=400)
         else:
             data = {
                 "error": "指定されたユーザーが存在しません",
             }
+            res =Response(response=json.dumps(data,ensure_ascii=False), status=400)
     else:
         data = {
             "error": "user-idが指定されていません",
         }
-    return jsonify(data)
+        res =Response(response=json.dumps(data,ensure_ascii=False), status=400)
+    return res
+    
 
 # ⑤ ギフトフラグを取得するAPI パラメータ：user-id
 @app.route('/api/gift-flag',methods=['GET'])
@@ -290,32 +307,35 @@ def gift_flag_api_j():
         user_id = int(params['user-id'])
         user = users.query.filter(users.id == user_id).first()
         if not user:
-            return jsonify({"error": "指定されたユーザIDは存在しません"})
+            return jsonify({"error": "指定されたユーザIDは存在しません"}),400
         flag_list = copy.copy(user.flag)
         if flag_list is not None :
             test = {
                 "gift_flag": flag_list,
                 "user_id":user_id
             }
+            res =Response(response=json.dumps(test,ensure_ascii=False), status=200)
         else:
                 test = {
                     "error": "指定されたユーザーが存在しないか、flag_listが正しく設定されていません",
                 }
+                res =Response(response=json.dumps(test,ensure_ascii=False), status=400)
     else:
         test = {
             "error": "user-idが指定されていません",
         }
-    return jsonify(test)
-
+        res =Response(response=json.dumps(test,ensure_ascii=False), status=400)
+    return res
 
 '''-----------------以下はテーブルを操作するデベロッパ向けAPI-----------------'''
+# diaryレコードの一行を削除する関数
 @app.route("/api/delete_diary", methods=["DELETE"])
 def deleteDiary():
     try:
         diary_id_str = request.form.get('diary-id')
         app.logger.info(diary_id_str)
         if diary_id_str is None:
-            return jsonify({'error': '日記IDパラメータが不足しています'})
+            return jsonify({'error': '日記IDパラメータが不足しています'}),400
 
         diary_id = int(diary_id_str)
         app.logger.info(diary_id)
@@ -328,17 +348,17 @@ def deleteDiary():
         if diary_entry:
             db.session.delete(diary_entry)
             db.session.commit()
-            return jsonify({'message': '日記エントリが正常に削除されました'})
+            return jsonify({'message': '日記エントリが正常に削除されました'}),200
         else:
-            return jsonify({'error': '日記エントリが見つかりません'})
+            return jsonify({'error': '日記エントリが見つかりません'}),400
 
     except ValueError:
-        return jsonify({'error': '無効な日記IDです'})
+        return jsonify({'error': '無効な日記IDです'}),400
 
 # 【テスト】日記テーブルにテストレコードを作成する
 @app.route('/test-table',methods=['POST'])
 def test_table():
-    user_post=users(id=1,flag=[0 for _ in range(25)])
+    user_post=users(id=1,flag=[0 for _ in range(20)])
     db.session.add(user_post)
     db.session.commit()
     new_post = diary(id=1,content='ありがとう', comment='おおきに',time= datetime.now(pytz.timezone('Asia/Tokyo')),user_id=1)
@@ -351,7 +371,7 @@ def test_table():
 def test_user():
     arg=request.form.get("password")
     app.logger.info(arg)
-    user_post=users(flag=[0 for _ in range(25)],pas=arg)
+    user_post=users(flag=[0 for _ in range(20)],pas=arg)
     db.session.add(user_post)
     db.session.commit()
     return 'DBに保存しました'
