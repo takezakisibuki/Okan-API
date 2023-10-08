@@ -5,16 +5,12 @@ def swag():
         "swagger": "2.0",
         "info": {
             "description": "これはおかんAPIの仕様書です。",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "title": "おかんAPI 仕様書",
             "termsOfService": "http://swagger.io/terms/",
             "contact": {
                 "email": "kokoroyamasaki.4869@gmail.com"
             },
-            "license": {
-                "name": "Apache 2.0",
-                "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-            }
         },
         "paths": {
             # A. 認証用のトークン発行API
@@ -319,7 +315,7 @@ def swag():
                                     },
                                     "gift_flag": {
                                         "type": "array",
-                                        "example": [0 for _ in range(25)]
+                                        "example": [0 for _ in range(20)]
                                     },
                                     "gift_number": {
                                         "type": "integer",
@@ -367,7 +363,7 @@ def swag():
                                     },
                                     "gift_flag": {
                                         "type": "array",
-                                        "example": [0 for _ in range(25)]
+                                        "example": [0 for _ in range(20)]
                                     },
                                 },
                             }
