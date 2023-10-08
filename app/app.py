@@ -73,14 +73,16 @@ def login_required(method):
         try:
             decoded = jwt.decode(token,'SECRET_KEY',algorithms='HS256')
             user_id=decoded['id']
+    
         except jwt.DecodeError:
-            # jsonify({"error":'Token is not valid.'"})
-            return "Token is not valid."
+            return jsonify({"error":"Token is not valid."}),400
+            # return "Token is not valid."
         except jwt.ExpiredSignatureError:
-            # jsonify({"error:'Token is expired.'"})
-            return "Token is expired."
+            return jsonify({"error":"Token is expired"}),400
+            # return "Token is expired."
         return method(user_id,*args, **kwargs)
     return wrapper
+
 
 # A. [POST] id と password をもらってアクセストークンを発行するAPI
 @app.route('/api/authorize',methods=['POST'])
@@ -92,13 +94,13 @@ def authorize():
     user_pass = db.session.query(users.pas).filter(users.id==input_id).first()
     #idがテーブルに登録されていなければエラーを返す
     if user_pass is None:
-        return jsonify({"error":f"Your id is not registered: input id is {input_id}"})
+        return jsonify({"error":f"Your id is not registered: input id is {input_id}"}),400
     # パスワードが間違っていればエラーを返す
     app.logger.info(bcrypt.__version__)
     if not bcrypt.checkpw(input_password.encode('utf-8'), user_pass[0].encode('utf-8')):
-        return jsonify({"error":f"Your password is wrong: input password is {input_password}"})
+        return jsonify({"error":f"Your password is wrong: input password is {input_password}"}),400
     # トークンを時間とidから生成
-    exp = datetime.utcnow() + timedelta(hours=1)
+    exp = datetime.utcnow() + timedelta(days=7)
     encoded = jwt.encode({'id': input_id,'exp': exp}, 'SECRET_KEY', algorithm='HS256')
     response = {'user_id':input_id,'token':encoded}
     return jsonify(response)
@@ -181,6 +183,8 @@ def okan_api(login_required_userID):
 @login_required
 def get_diary(login_required_userID):
     diary_id=request.args.get('diary-id')
+    app.logger.info('diary-id:')
+    app.logger.info(diary_id)
     # diary_id をクエリパラメータからゲットできていれば
     if not diary_id is None:
         posts=diary.query.filter(diary.id==diary_id).all()
