@@ -389,44 +389,6 @@ def swag():
                     },
                 }
             },
-            "/api/delete_gitflag": {
-                "delete": {
-                    "tags": [
-                        "開発者向けAPI"
-                    ],
-                    "summary": "user-flagのAPI",
-                    "description": "",
-                    "consumes": [
-                        "multipart/form-data"
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "user-id",
-                            "in": "formData",
-                            "description": "初期化したいgift-flagを持つuser_id",
-                            "required": True,
-                            "type": "integer",
-                            "format": "int64"
-                        },
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "successful operation",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "message": {
-                                        "type": "string"
-                                    },
-                                },
-                            }
-                        }
-                    },
-                }
-            },
         },
         "externalDocs": {
             "description": "Find out more about Swagger",
