@@ -363,48 +363,7 @@ def deleteDiary():
 
     except ValueError:
         return jsonify({'error': '無効な日記IDです'}),400
-@app.route("/api/delete_gitflag", methods=["DELETE"])
-def delete_gitf_flag():
-    # URLパラメータ
-    params = request.form
-    app.logger.info(params)
-    if 'user-id' in params:
-        user_id = int(params['user-id'])
-        ran = random.randint(0, 20)
 
-        # ユーザーの存在を確認
-        user = users.query.filter(users.id == user_id).first()
-        if user:
-            flag_list = copy.copy(user.flag)
-            if flag_list is not None and 0 <= ran < len(flag_list):
-                flag_list= [0 for _ in range(20)]
-                user.flag = flag_list
-                app.logger.info(user.flag)
-                app.logger.info(flag_list)
-                db.session.commit()
-                data = {
-                    "user_id":user.id,
-                    "flag":user.flag,
-                    "gift_number": ran
-                    }
-                res =Response(response=json.dumps(data,ensure_ascii=False,indent=4), status=200)
-                
-            else:
-                data = {
-                    "error": "指定されたユーザーが存在しないか、flag_listが正しく設定されていません",
-                }
-                res =Response(response=json.dumps(data,ensure_ascii=False,indent=4), status=400)
-        else:
-            data = {
-                "error": "指定されたユーザーが存在しません",
-            }
-            res =Response(response=json.dumps(data,ensure_ascii=False), status=400)
-    else:
-        data = {
-            "error": "user-idが指定されていません",
-        }
-        res =Response(response=json.dumps(data,ensure_ascii=False), status=400)
-    return res
 # 【テスト】日記テーブルにテストレコードを作成する
 @app.route('/test-table',methods=['POST'])
 def test_table():
