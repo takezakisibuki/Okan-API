@@ -155,7 +155,28 @@ def register_user():
         "token":encoded
     }
     return Response(response=json.dumps(res,ensure_ascii=False,indent=4), status=200)
-    
+
+# C. [POST] nameをDBに保存しnameとIDをリターン。
+@app.route('/api/name',methods=['POST'])
+@login_required
+def make_name(login_required_userID):
+    input_id = request.form.get('id')
+    input_name = request.form.get('name')
+    if not input_id or not input_name:
+        # return jsonify({"error": "アカウントとパスワードを提供してください"}),400
+        return jsonify({"error": "plese enetner id and name"}),400
+    record=users.query.filter(users.id==input_id).first()
+
+    record.name=input_name
+    db.session.add(record)
+    db.session.commit()
+
+    res={
+        "id":input_id,
+        "name":input_name
+    }
+
+    return Response(response=json.dumps(res,ensure_ascii=False,indent=4), status=200)
 
 
 '''-----------------以下は本機能のAPI-----------------'''
