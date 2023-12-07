@@ -157,7 +157,7 @@ def register_user():
     return Response(response=json.dumps(res,ensure_ascii=False,indent=4), status=200)
 
 # C. [POST] nameをDBに保存しnameとIDをリターン。
-@app.route('/api/name',methods=['POST'])
+@app.route('/api/name',methods=['PUT'])
 @login_required
 def make_name(login_required_userID):
     input_id = request.form.get('id')
