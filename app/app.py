@@ -87,25 +87,29 @@ def login_required(method):
     return wrapper
 
 
-# A. [POST] id と password をもらってアクセストークンを発行するAPI
-@app.route('/api/authorize',methods=['POST'])
+# A. [POST] 通常ログイン account と password をもらってアクセストークンを発行するAPI
+@app.route('/api/Login',methods=['POST'])
 def authorize():
     # passwordとidをクエリパラメータとして取得
     # クエリパラメータでもrequest.form.getで取得。argsだと取って来れない。
-    input_id = request.form.get('id',type=int)
+    input_account = request.form.get('account')
+    app.logger.info(input_account)
     input_password = request.form.get('password')
-    user_pass = db.session.query(users.pas).filter(users.id==input_id).first()
-    #idがテーブルに登録されていなければエラーを返す
+    user_pass = db.session.query(users.pas).filter(users.account==input_account).first()
+    #accouontがテーブルに登録されていなければエラーを返す
     if user_pass is None:
-        return jsonify({"error":f"Your id is not registered: input id is {input_id}"}),400
+        return jsonify({"error":f"Your account is not registered: input account is {input_account}"}),400
     # パスワードが間違っていればエラーを返す
-    app.logger.info(bcrypt.__version__)
+    # app.logger.info(bcrypt.__version__)
     if not bcrypt.checkpw(input_password.encode('utf-8'), user_pass[0].encode('utf-8')):
         return jsonify({"error":f"Your password is wrong: input password is {input_password}"}),400
     # トークンを時間とidから生成
+    record=users.query.filter(users.account==input_account).first()
+    user_id=record.id
     exp = datetime.utcnow() + timedelta(days=7)
-    encoded = jwt.encode({'id': input_id,'exp': exp}, 'SECRET_KEY', algorithm='HS256')
-    response = {'user_id':input_id,'token':encoded}
+
+    encoded = jwt.encode({'id': user_id,'exp': exp}, 'SECRET_KEY', algorithm='HS256')
+    response = {'user_id':user_id,'token':encoded}
     return jsonify(response)
 
 # B. [POST] テーブルをマイグレートしてユーザを新規登録するAPI
@@ -147,7 +151,7 @@ def register_user():
         "id":user_id,
         "token":encoded
     }
-    return Response(response=json.dumps(res,ensure_ascii=False,indent=4), status=400)
+    return Response(response=json.dumps(res,ensure_ascii=False,indent=4), status=200)
     
 
 
