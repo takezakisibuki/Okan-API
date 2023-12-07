@@ -9,7 +9,9 @@
     `git clone https://github.com/kokochin/Okan-API.git`
 2. クローンしたリポジトリ(ディレクトリ)に侵入します<br>
     `cd Okan-API`
-3. `.env.example`ファイルをコピーして名前を`.env`に変更します。
+3. `.env.example`ファイルをコピーして名前を`.env`に変更します。<br>
+    APIキーは ChatGPT の APIキーを入れてください。<br>
+    お金？...ごめんんさい、ご自身で契約してください。
 4. コンテナをビルドします。<br>
     `make up`
 5. Flaskが起動したか確認します。<br>
@@ -40,6 +42,7 @@
 コマンド用意してますが、/app/app.log ファイルをVScodeから直接見てもらったらOKです。<br>
 ### 3. uwsgi のログ
 **コマンド**：`make log-uwsgi`<br>
+もしくは, `log/uwsgi.log` ファイルでも確認できます。<br>
 パッケージ足りないとか、そういう系のエラーはここにでます。<br>
 ちなみにuwsgiはnginx(webコンテナ)とflask(appコンテナ)の架け橋です。（あまりにもざっくり）
 
