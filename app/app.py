@@ -108,7 +108,7 @@ def authorize():
     response = {'user_id':input_id,'token':encoded}
     return jsonify(response)
 
-# B. [POST] テーブルをマイグレートしてユーザを登録するAPI
+# B. [POST] テーブルをマイグレートしてユーザを新規登録するAPI
 @app.route('/api/registration', methods=['POST'])
 def register_user():
     db.create_all()
@@ -125,7 +125,6 @@ def register_user():
         # return jsonify({"error": "ユーザーは既に登録されています"}),400
         return jsonify({"error": "alleady exist"}),400
     # パスワードをハッシュ化して保存
-    
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     password_hash = password_hash.decode('utf8')
     app.logger.info(password_hash)
@@ -133,15 +132,20 @@ def register_user():
     # app.logger.info("ここにはきています")
     db.session.add(new_user)
     db.session.commit()
-    app.logger.info("ここにはきています")
+
     # 登録したDBからPasとidを取得
     record=users.query.filter(users.account==Account).first()
     user_id=record.id
     user_pas=record.pas
 
+    # トークンを時間とidから生成
+    exp = datetime.utcnow() + timedelta(days=7)
+    encoded = jwt.encode({'id': user_id,'exp': exp}, 'SECRET_KEY', algorithm='HS256')
+
+    # tokenとIDを返す
     res={
         "id":user_id,
-        "pass":user_pas
+        "token":encoded
     }
     return Response(response=json.dumps(res,ensure_ascii=False,indent=4), status=400)
     
