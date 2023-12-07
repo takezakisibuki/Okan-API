@@ -88,7 +88,7 @@ def login_required(method):
 
 
 # A. [POST] 通常ログイン account と password をもらってアクセストークンを発行するAPI
-@app.route('/api/Login',methods=['POST'])
+@app.route('/api/login',methods=['POST'])
 def authorize():
     # passwordとidをクエリパラメータとして取得
     # クエリパラメータでもrequest.form.getで取得。argsだと取って来れない。
@@ -109,8 +109,11 @@ def authorize():
     exp = datetime.utcnow() + timedelta(days=7)
 
     encoded = jwt.encode({'id': user_id,'exp': exp}, 'SECRET_KEY', algorithm='HS256')
-    response = {'user_id':user_id,'token':encoded}
-    return jsonify(response)
+    res={
+        "id":user_id,
+        "token":encoded
+    }
+    return Response(response=json.dumps(res,ensure_ascii=False,indent=4), status=200)
 
 # B. [POST] テーブルをマイグレートしてユーザを新規登録するAPI
 @app.route('/api/registration', methods=['POST'])
