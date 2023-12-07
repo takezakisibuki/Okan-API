@@ -350,6 +350,63 @@ def swag():
                     },
                 }
             },
+             # nameをDBに保存しnameとIDをリターン。
+            "/api/name": {
+                "put": {
+                    "security": [
+                        {
+                            "Bearer": []
+                        }
+                    ],
+                    "tags": [
+                        "おかんAPI"
+                    ],
+                    "summary": "usersテーブルのnameを更新するAPI",
+                    "description": "",
+                    "consumes": [
+                        "multipart/form-data"
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "parameters": [
+                        {
+                            "name": "user-id",
+                            "in": "query",
+                            "description": "ユーザid",
+                            "required": True,
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        {
+                            "name": "name",
+                            "in": "query",
+                            "description": "呼び名",
+                            "required": True,
+                            "type": "string",
+                            "format": "formData"
+                        },
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "successful operation",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    'user_id':{
+                                        "type": "integer",
+                                        "example": "8"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example":"kokochin"
+                                    },
+                                },
+                            }
+                        }
+                    },
+                }
+            },
             "/api/delete_diary": {
                 "delete": {
                     "tags": [
