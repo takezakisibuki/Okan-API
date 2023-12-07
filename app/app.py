@@ -176,7 +176,8 @@ def okan_api(login_required_userID):
         # パラメータが正しければ保存
         if 'user-id' in params and 'diary-content' in params:
             content=params.get('diary-content')
-            comment=okan_gpt.create(content)
+            name=user.name
+            comment=okan_gpt.create_with_name(content, name)
             new_record=diary(content=content,comment=comment["choices"][0]["message"]["content"],time=date_today,user_id=user_id)
             db.session.add(new_record)
             db.session.commit()
