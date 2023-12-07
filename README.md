@@ -47,4 +47,4 @@
 ちなみにuwsgiはnginx(webコンテナ)とflask(appコンテナ)の架け橋です。（あまりにもざっくり）
 
 ## APIの仕様書について
-`http://v157-7-194-194.iq2e.static.cnode.io/api/docs`
+`http://v160-251-198-215.qiuq.static.cnode.jp/api/docs`
