@@ -160,8 +160,8 @@ def register_user():
 @app.route('/api/name',methods=['PUT'])
 @login_required
 def make_name(login_required_userID):
-    input_id = request.form.get('id')
-    input_name = request.form.get('name')
+    input_id = request.args.get('id')
+    input_name = request.args.get('name')
     if not input_id or not input_name:
         # return jsonify({"error": "アカウントとパスワードを提供してください"}),400
         return jsonify({"error": "plese enetner id and name"}),400

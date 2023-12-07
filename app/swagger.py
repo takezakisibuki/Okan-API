@@ -371,7 +371,7 @@ def swag():
                     ],
                     "parameters": [
                         {
-                            "name": "user-id",
+                            "name": "id",
                             "in": "query",
                             "description": "ユーザid",
                             "required": True,
