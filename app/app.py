@@ -47,9 +47,12 @@ db = SQLAlchemy(app)
 class users(db.Model):
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     flag=db.Column(pg.ARRAY(db.Integer, dimensions=1), nullable=False)
     pas=db.Column(db.String(255),nullable=False)
+    account=db.Column(db.String(255),nullable=False,unique=True)
+    name=db.Column(db.String(255),nullable=True)
+
 
 # 日記テーブル
 class diary(db.Model):
@@ -109,25 +112,40 @@ def authorize():
 @app.route('/api/registration', methods=['POST'])
 def register_user():
     db.create_all()
-    user_id = request.form.get('user-id')
+    Account = request.form.get('account')
     password = request.form.get('password')
-    app.logger.info(user_id)
+    app.logger.info(Account)
     app.logger.info(password)
-    if not user_id or not password:
-        return jsonify({"error": "ユーザーIDとパスワードを提供してください"}),400
-    existing_user = users.query.filter_by(id=user_id).first()
-    app.logger.info("ここにはきています")
+    if not Account or not password:
+        # return jsonify({"error": "アカウントとパスワードを提供してください"}),400
+        return jsonify({"error": "plese enetner pas and account"}),400
+    existing_user = users.query.filter_by(account=Account).first()
+    # app.logger.info("ここにはきています")
     if existing_user:
-        return jsonify({"error": "ユーザーは既に登録されています"}),400
+        # return jsonify({"error": "ユーザーは既に登録されています"}),400
+        return jsonify({"error": "alleady exist"}),400
     # パスワードをハッシュ化して保存
-    app.logger.info("ここにはきています")
+    
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     password_hash = password_hash.decode('utf8')
     app.logger.info(password_hash)
-    new_user = users(id=user_id,flag=[0 for _ in range(20)],pas=password_hash)
+    new_user = users(flag=[0 for _ in range(20)],pas=password_hash,account=Account)
+    # app.logger.info("ここにはきています")
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({"message": "ユーザーが登録されました", "user_id": user_id}),200
+    app.logger.info("ここにはきています")
+    # 登録したDBからPasとidを取得
+    record=users.query.filter(users.account==Account).first()
+    user_id=record.id
+    user_pas=record.pas
+
+    res={
+        "id":user_id,
+        "pass":user_pas
+    }
+    return Response(response=json.dumps(res,ensure_ascii=False,indent=4), status=400)
+    
+
 
 '''-----------------以下は本機能のAPI-----------------'''
 # ① [POST] 日記保存とオカンコメントの生成＆格納API
